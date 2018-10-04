@@ -20,20 +20,11 @@ class FileQueueStorage implements IQueueStorageHandler
         // TODO: Implement save() method.
     }
 
-    /**
-     * Retrieve a job entry
-     * @param $id
-     * @return JobDataset
-     */
     public function get($id): JobDataset
     {
         // TODO: Implement get() method.
     }
 
-    /**
-     * Get next job in queue
-     * @return IJob
-     */
     public function getNext(): JobDataset
     {
         // TODO: Implement getNext() method.
