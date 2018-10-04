@@ -1,0 +1,24 @@
+{
+  "name": "sophiegauthier/phq",
+  "description": "Queue system written in PHP",
+  "autoload": {
+    "psr-4": {
+      "PHQ\\": "src/",
+      "spec\\TestObjects\\": "spec/TestObjects"
+    }
+  },
+  "require": {
+    "phpunit/phpunit": "^7.3"
+  },
+  "require-dev": {
+    "ext-pdo_mysql": "^7.1",
+    "ext-PDO": "^7.1",
+    "phpspec/phpspec": "^5.0"
+  },
+  "authors": [
+    {
+      "name": "Sophie Gauthier",
+      "email": "elait.sa1@gmail.com"
+    }
+  ]
+}
