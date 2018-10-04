@@ -24,7 +24,7 @@ Create a new job type that extends `\PHQ\Jobs\Job` and implement at least the `r
 
 ```php
 class MyJob extends \PHQ\Jobs\Job{
-    run(): int{
+    public function run(): int{
         return \PHQ\Jobs\Job::STATUS_SUCCESS;
     }
 }
