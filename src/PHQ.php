@@ -15,8 +15,6 @@ class PHQ
 
     public function __construct(IQueueStorageHandler $storageHandler)
     {
-        require_once __DIR__ . "/bootstrap.php";
-
         $this->storageHandler = $storageHandler;
     }
 
