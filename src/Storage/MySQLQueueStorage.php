@@ -20,6 +20,9 @@ class MySQLQueueStorage implements IQueueStorageHandler
      * @var \PDO
      */
     protected $pdo;
+    /**
+     * @var string
+     */
     protected $table;
 
     public function __construct(\PDO $pdo, string $table = 'phq_jobs')
