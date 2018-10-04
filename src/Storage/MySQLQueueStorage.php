@@ -28,6 +28,10 @@ class MySQLQueueStorage implements IQueueStorageHandler
         $this->table = $table;
     }
 
+    /**
+     * @param $id
+     * @return JobDataset
+     */
     function get($id): JobDataset
     {
         $statement = $this->pdo->prepare("
@@ -47,6 +51,10 @@ class MySQLQueueStorage implements IQueueStorageHandler
         return new JobDataset($data['id'], $data['class'], $data['payload']);
     }
 
+    /**
+     * @param IJob $job
+     * @return bool
+     */
     public function enqueue(IJob $job): bool
     {
         $data = $job->serialise();

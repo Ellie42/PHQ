@@ -1,6 +1,11 @@
 {
   "name": "sophiegauthier/phq",
   "description": "Queue system written in PHP",
+  "config": {
+    "platform": {
+      "php": "7.2"
+    }
+  },
   "autoload": {
     "psr-4": {
       "PHQ\\": "src/",

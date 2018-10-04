@@ -18,6 +18,9 @@ class PHQ
         $this->storageHandler = $storageHandler;
     }
 
+    /**
+     * @param IJob $job
+     */
     public function enqueue(IJob $job)
     {
         $this->storageHandler->enqueue($job);

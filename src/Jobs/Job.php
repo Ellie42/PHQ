@@ -10,12 +10,18 @@ abstract class Job implements IJob
 
     protected $data = [];
 
+    /**
+     * @return string
+     */
     function serialise(): string
     {
         $data = $this->data;
         return json_encode($data);
     }
 
+    /**
+     * @param string $data
+     */
     function deserialise(string $data): void
     {
         $this->data = json_decode($data, true);

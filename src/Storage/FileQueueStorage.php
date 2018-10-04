@@ -15,16 +15,27 @@ use PHQ\Jobs\JobDataset;
 class FileQueueStorage implements IQueueStorageHandler
 {
 
-    public function enqueue(\PHQ\Jobs\IJob $job): bool
+    /**
+     * @param IJob $job
+     * @return bool
+     */
+    public function enqueue(IJob $job): bool
     {
         // TODO: Implement save() method.
     }
 
+    /**
+     * @param $id
+     * @return JobDataset
+     */
     public function get($id): JobDataset
     {
         // TODO: Implement get() method.
     }
 
+    /**
+     * @return JobDataset
+     */
     public function getNext(): JobDataset
     {
         // TODO: Implement getNext() method.
