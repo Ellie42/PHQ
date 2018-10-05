@@ -2,7 +2,7 @@
 
 Job queue system written in PHP
 
-## Setup
+## Getting Started
 
 Firstly choose a storage medium for the queue data, and implement or use an existing class that implements `\PHQ\Storage\IQueueStorageHandler`.
 
@@ -12,6 +12,8 @@ Firstly choose a storage medium for the queue data, and implement or use an exis
     
     /**
     * $storage can be any class that implements \PHQ\Storage\IQueueStorageHandler
+    * Only required if not specified in the configuration file, otherwise, this instance will override
+    * the configured storage
     */
     $phq = new \PHQ\PHQ($storage);
     
@@ -47,4 +49,45 @@ Retrieve the next job by calling `getNext()` on `PHQ\PHQ`
     * $job is an instance of \PHQ\Jobs\IJob
     */
     $job = $phq->getNext();
+```
+
+## Configuration
+
+PHQ will automatically load configuration data stored in `${cwd}/phqconf.php`.
+
+Example:
+```php
+    <?php
+    
+    return [
+        
+        //This will override the system ENVIRONMENT variable if set 
+        "environment" => "test",
+        
+        //Storage handler configuration, if this is specified then creating a new instance of PHQ
+        //will no longer require the IQueueStorageHandler parameter  
+        "storage" => [
+            
+            //This should be a class name of a subclass of IQueueStorageHandler
+            "handler" => \PHQ\Storage\MySQLQueueStorage::class,
+            
+            //These are options specific to the storage handler itself and will be passed directly 
+            //to it as an array, so long as it implements the IQueueStorageConfigurable interface
+            "options" => [
+                 
+                //The first key is always the environment that the options should be valid for
+                "test" => [
+                    
+                    //All data within this array will be passed to the IQueueStorageConfigurable 
+                    //init() method
+                    "host" => "localhost",
+                    "port" => 14783,
+                    "user" => "root",
+                    "pass" => "root",
+                    "database" => "phq"
+                    
+                ] 
+            ]
+        ]
+    ];
 ```
