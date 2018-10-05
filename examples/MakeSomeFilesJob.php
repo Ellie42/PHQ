@@ -6,7 +6,6 @@ class MakeSomeFilesJob extends \PHQ\Jobs\Job{
         $this->data['fileCount'] = $fileCount;
     }
 
-
     /**
      * This should return a status number as defined in {Job::class}
      * @return int

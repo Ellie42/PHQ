@@ -14,7 +14,7 @@ use PHQ\Data\JobDataset;
 use PHQ\Jobs\IJob;
 use PHQ\Jobs\Job;
 
-class MySQLQueueStorage implements IQueueStorageHandler
+class MySQLQueueStorage implements IQueueStorageHandler, IQueueStorageConfigurable
 {
     /**
      * @var \PDO
@@ -90,16 +90,32 @@ class MySQLQueueStorage implements IQueueStorageHandler
 
         $result = $statement->execute([Job::STATUS_IDLE]);
 
-        if(!$result){
+        if (!$result) {
             throw new \Exception($this->pdo->errorInfo(), $this->pdo->errorCode());
         }
 
         $data = $statement->fetch(\PDO::FETCH_ASSOC);
 
-        if($data === null){
+        if ($data === null) {
             return null;
         }
 
         return new JobDataset($data);
+    }
+
+    /**
+     * Initialise the storage handler with the config
+     * @param array $options
+     */
+    public function init(array $options): void
+    {
+        if ($this->pdo !== null) {
+            return;
+        }
+
+        $this->pdo = new \PDO(
+            "mysql:host={$options['host']};dbname={$options['database']}",
+            $options['username'], $options['password']
+        );
     }
 }

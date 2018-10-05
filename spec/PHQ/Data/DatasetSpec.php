@@ -2,9 +2,8 @@
 
 namespace spec\PHQ\Data;
 
-use PHQ\Data\Dataset;
 use PhpSpec\ObjectBehavior;
-use Prophecy\Argument;
+use PHQ\Data\Dataset;
 
 class DatasetSpec extends ObjectBehavior
 {

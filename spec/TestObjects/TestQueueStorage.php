@@ -9,6 +9,7 @@
 namespace spec\TestObjects;
 
 
+use PHQ\Config\PHQConfig;
 use PHQ\Data\JobDataset;
 use PHQ\Jobs\IJob;
 use PHQ\Storage\IQueueStorageHandler;
@@ -37,5 +38,14 @@ class TestQueueStorage implements IQueueStorageHandler
     public function getNext(): JobDataset
     {
         // TODO: Implement getNext() method.
+    }
+
+    /**
+     * Initialise the storage handler with the config
+     * @param PHQConfig $config
+     */
+    public function init(PHQConfig $config): void
+    {
+        // TODO: Implement init() method.
     }
 }

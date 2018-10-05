@@ -8,9 +8,8 @@ use PHQ\Jobs\IJob;
 
 interface IQueueStorageHandler
 {
-
     /**
-     * Retrieve a job entry
+     * Retrieve a job entry by id
      * @param $id
      * @return JobDataset
      */

@@ -3,10 +3,10 @@
 namespace spec\PHQ\Storage;
 
 use PDOStatement;
+use PhpSpec\ObjectBehavior;
 use PHQ\Data\JobDataset;
 use PHQ\Jobs\Job;
 use PHQ\Storage\MySQLQueueStorage;
-use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 use spec\TestObjects\TestJob;
 

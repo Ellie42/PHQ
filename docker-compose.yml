@@ -2,5 +2,9 @@ version: '3'
 services:
   test-db:
     image: mysql
-volumes:
-  logvolume01: {}
+    ports:
+      - 7777:3306
+    environment:
+      MYSQL_DATABASE: phq_test
+      MYSQL_ROOT_PASSWORD: root
+

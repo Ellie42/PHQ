@@ -2,10 +2,9 @@
 
 namespace spec\PHQ\Data;
 
-use PHQ\Data\JobDataset;
 use PhpSpec\ObjectBehavior;
+use PHQ\Data\JobDataset;
 use PHQ\Jobs\Job;
-use Prophecy\Argument;
 use spec\TestObjects\TestJob;
 
 class JobDatasetSpec extends ObjectBehavior
