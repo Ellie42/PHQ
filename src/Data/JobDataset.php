@@ -39,9 +39,4 @@ class JobDataset extends Dataset
      * @var int
      */
     public $retries;
-
-    public function __construct(array $props = [])
-    {
-        $this->hydrate($props);
-    }
 }
