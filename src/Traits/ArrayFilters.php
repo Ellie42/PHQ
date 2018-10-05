@@ -24,11 +24,7 @@ trait ArrayFilters
      */
     protected function getWhitelistedValues(array $props, array $whitelistKeys): array
     {
-        if (count($whitelistKeys) === 0) {
-            $whitelisted = $props;
-        } else {
-            $whitelisted = array_intersect_key($props, array_flip($whitelistKeys));
-        }
+        $whitelisted = array_intersect_key($props, array_flip($whitelistKeys));
 
         return $whitelisted;
     }

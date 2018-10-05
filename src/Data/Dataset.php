@@ -28,7 +28,11 @@ class Dataset
     protected function hydrate(array $props, array $whitelistKeys = [])
     {
         //Whitelist is optional as if a property does not exist on the class it will throw an error
-        $whitelisted = $this->getWhitelistedValues($props, $whitelistKeys);
+        if(count($whitelistKeys) === 0){
+            $whitelisted = $props;
+        }else{
+            $whitelisted = $this->getWhitelistedValues($props, $whitelistKeys);
+        }
 
         foreach ($whitelisted as $key => $val) {
             $setterName = "set" . ucfirst($key);
