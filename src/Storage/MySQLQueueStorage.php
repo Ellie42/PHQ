@@ -10,9 +10,9 @@ namespace PHQ\Storage;
 
 
 use PHPUnit\Runner\Exception;
+use PHQ\Data\JobDataset;
 use PHQ\Jobs\IJob;
 use PHQ\Jobs\Job;
-use PHQ\Jobs\JobDataset;
 
 class MySQLQueueStorage implements IQueueStorageHandler
 {
@@ -38,7 +38,7 @@ class MySQLQueueStorage implements IQueueStorageHandler
     function get($id): JobDataset
     {
         $statement = $this->pdo->prepare("
-            SELECT `id`,`class`,`payload`, `status` 
+            SELECT `id`,`class`,`payload`, `status`, `retries`
             FROM {$this->table}
             WHERE id = ?            
         ");
@@ -51,7 +51,7 @@ class MySQLQueueStorage implements IQueueStorageHandler
 
         $data = $statement->fetch(\PDO::FETCH_ASSOC);
 
-        return new JobDataset($data['id'], $data['class'], $data['payload']);
+        return new JobDataset($data);
     }
 
     /**
@@ -82,7 +82,7 @@ class MySQLQueueStorage implements IQueueStorageHandler
     public function getNext(): ?JobDataset
     {
         $statement = $this->pdo->prepare("
-            SELECT `id`,`class`,`payload`,`status`
+            SELECT `id`,`class`,`payload`,`status`, `retries`
             FROM {$this->table}
             WHERE status = ?
             ORDER BY id ASC
@@ -100,6 +100,6 @@ class MySQLQueueStorage implements IQueueStorageHandler
             return null;
         }
 
-        return new JobDataset($data['id'],$data['class'],$data['payload'],$data['status']);
+        return new JobDataset($data);
     }
 }

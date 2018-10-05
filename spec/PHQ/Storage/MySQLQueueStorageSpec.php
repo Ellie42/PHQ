@@ -3,8 +3,8 @@
 namespace spec\PHQ\Storage;
 
 use PDOStatement;
+use PHQ\Data\JobDataset;
 use PHQ\Jobs\Job;
-use PHQ\Jobs\JobDataset;
 use PHQ\Storage\MySQLQueueStorage;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
@@ -30,7 +30,7 @@ class MySQLQueueStorageSpec extends ObjectBehavior
         $id = 5;
 
         $this->pdo->prepare(Argument::containingString(
-            "SELECT `id`,`class`,`payload`, `status` \n            FROM phq_jobs\n            WHERE id = ?")
+            "SELECT `id`,`class`,`payload`, `status`, `retries`\n            FROM phq_jobs\n            WHERE id = ?")
         )->shouldBeCalled()->willReturn($statement);
 
         $statement->execute([(int)$id])->shouldBeCalled()->willReturn(true);
@@ -61,7 +61,7 @@ class MySQLQueueStorageSpec extends ObjectBehavior
     function it_should_be_able_to_return_the_next_available_job(PDOStatement $statement)
     {
         $this->pdo->prepare(Argument::containingString(
-            "SELECT `id`,`class`,`payload`,`status`\n            FROM phq_jobs\n            WHERE status = ?"
+            "SELECT `id`,`class`,`payload`,`status`, `retries`\n            FROM phq_jobs\n            WHERE status = ?"
         ))->shouldBeCalled()->willReturn($statement);
 
         $statement->execute(Argument::containing(Job::STATUS_IDLE))->shouldBeCalled()->willReturn(true);
@@ -70,7 +70,8 @@ class MySQLQueueStorageSpec extends ObjectBehavior
             "id" => 4,
             "class" => "TestClass",
             "payload" => "abc",
-            "status" => 0
+            "status" => 0,
+            "retries" => 0
         ]);
 
         $this->getNext()->shouldBeAnInstanceOf(JobDataset::class);
@@ -79,7 +80,7 @@ class MySQLQueueStorageSpec extends ObjectBehavior
     function it_should_return_null_if_there_are_no_more_jobs(PDOStatement $statement)
     {
         $this->pdo->prepare(Argument::containingString(
-            "SELECT `id`,`class`,`payload`,`status`\n            FROM phq_jobs\n            WHERE status = ?"
+            "SELECT `id`,`class`,`payload`,`status`, `retries`\n            FROM phq_jobs\n            WHERE status = ?"
         ))->shouldBeCalled()->willReturn($statement);
 
         $statement->execute(Argument::containing(Job::STATUS_IDLE))->shouldBeCalled()->willReturn(true);

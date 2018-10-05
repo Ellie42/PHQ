@@ -3,8 +3,8 @@
 namespace PHQ\Storage;
 
 
+use PHQ\Data\JobDataset;
 use PHQ\Jobs\IJob;
-use PHQ\Jobs\JobDataset;
 
 interface IQueueStorageHandler
 {

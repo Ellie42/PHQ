@@ -6,10 +6,10 @@
  * Time: 12:54
  */
 
-namespace PHQ\Jobs;
+namespace PHQ\Data;
 
 
-class JobDataset
+class JobDataset extends Dataset
 {
     /**
      * Job ID
@@ -20,7 +20,7 @@ class JobDataset
      * Classname of the job object that this entry was created from
      * @var string
      */
-    public $className;
+    public $class;
 
     /**
      * Serialised job payload
@@ -34,11 +34,16 @@ class JobDataset
      */
     public $status;
 
-    public function __construct($id, string $className, string $payload, int $status = Job::STATUS_IDLE)
+    /**
+     * Number of times this job has failed and been re-run
+     * @var int
+     */
+    public $retries;
+
+    public function __construct(array $props = [])
     {
-        $this->id = $id;
-        $this->className = $className;
-        $this->payload = $payload;
-        $this->status = $status;
+        $this->hydrate($props, [
+            "id", "class", "payload", "status", "retries"
+        ]);
     }
 }

@@ -4,7 +4,7 @@ namespace spec\PHQ;
 
 use PhpSpec\ObjectBehavior;
 use PHQ\Jobs\IJob;
-use PHQ\Jobs\JobDataset;
+use PHQ\Data\JobDataset;
 use PHQ\PHQ;
 use spec\TestObjects\TestJob;
 use spec\TestObjects\TestQueueStorage;
@@ -35,7 +35,11 @@ class PHQSpec extends ObjectBehavior
 
     function it_should_be_able_to_get_the_next_job()
     {
-        $jobData = new JobDataset(5, TestJob::class, '123');
+        $jobData = new JobDataset([
+            "id" => 5,
+            "class" => TestJob::class,
+            "payload" => "{}"
+        ]);
         $this->storage->getNext()->shouldBeCalled()->willReturn($jobData);
 
         $this->getNext()->shouldBeAnInstanceOf(IJob::class);

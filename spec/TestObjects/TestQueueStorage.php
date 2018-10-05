@@ -9,8 +9,8 @@
 namespace spec\TestObjects;
 
 
+use PHQ\Data\JobDataset;
 use PHQ\Jobs\IJob;
-use PHQ\Jobs\JobDataset;
 use PHQ\Storage\IQueueStorageHandler;
 
 class TestQueueStorage implements IQueueStorageHandler

@@ -9,8 +9,8 @@
 namespace PHQ\Storage;
 
 
+use PHQ\Data\JobDataset;
 use PHQ\Jobs\IJob;
-use PHQ\Jobs\JobDataset;
 
 class FileQueueStorage implements IQueueStorageHandler
 {

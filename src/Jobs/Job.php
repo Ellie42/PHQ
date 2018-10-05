@@ -2,13 +2,27 @@
 
 namespace PHQ\Jobs;
 
+use PHQ\Data\JobDataset;
+
 abstract class Job implements IJob
 {
     public const STATUS_SUCCESS = 1;
     public const STATUS_IDLE = 0;
     public const STATUS_FAILURE = -1;
 
-    protected $data = [];
+    /**
+     * @var JobDataset
+     */
+    protected $data;
+
+    public function __construct(JobDataset $dataset = null)
+    {
+        if ($dataset === null) {
+            $this->data = new JobDataset();
+        } else {
+            $this->data = $dataset;
+        }
+    }
 
     /**
      * @return string
@@ -35,17 +49,23 @@ abstract class Job implements IJob
      */
     static function fromJobEntry(JobDataset $jobData): IJob
     {
-        if (!class_exists($jobData->className)) {
-            throw new \Exception("Class {$jobData->className} does not exist!");
+        if (!class_exists($jobData->class)) {
+            throw new \Exception("Class {$jobData->class} does not exist!");
         }
 
-        $className = $jobData->className;
+        $className = $jobData->class;
 
-        $obj = new $className();
+        //Remove the class property from the dataset as the job class will reuse this dataset
+        unset($jobData->class);
 
-        if (!($obj instanceof IJob)) {
+        if (!(is_subclass_of($className, IJob::class))) {
             throw new \Exception("$className is not an instance of " . IJob::class);
         }
+
+        /**
+         * @var IJob
+         */
+        $obj = new $className($jobData);
 
         return $obj;
     }
