@@ -75,7 +75,7 @@ Example:
             //to it as an array, so long as it implements the IQueueStorageConfigurable interface
             "options" => [
                  
-                //The first key is always the environment that the options should be valid for
+                //The key here is always the environment that the options should be valid for
                 "test" => [
                     
                     //All data within this array will be passed to the IQueueStorageConfigurable 
