@@ -15,6 +15,11 @@ class Dataset
 {
     use ArrayFilters;
 
+    public function __construct(array $props = [])
+    {
+        $this->hydrate($props);
+    }
+
     /**
      * Set all class properties from an array with whitelisted keys
      * @param array $props
