@@ -1,12 +1,12 @@
 <?php
 
-namespace spec\PHQ\Storage;
+namespace spec\PHQ\Storage\MySQL;
 
 use PDOStatement;
 use PhpSpec\ObjectBehavior;
 use PHQ\Data\JobDataset;
 use PHQ\Jobs\Job;
-use PHQ\Storage\MySQLQueueStorage;
+use PHQ\Storage\MySQL\MySQLQueueStorage;
 use Prophecy\Argument;
 use spec\TestObjects\TestJob;
 

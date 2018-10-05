@@ -14,7 +14,7 @@
   },
   "require": {
     "phpunit/phpunit": "^7.3",
-    "mikey179/vfsStream": "^1.6"
+    "mikey179/vfsStream": "^1.6",
   },
   "require-dev": {
     "bossa/phpspec2-expect": "^3.0",

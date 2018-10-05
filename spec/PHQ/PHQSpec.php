@@ -6,6 +6,7 @@ use PhpSpec\ObjectBehavior;
 use PHQ\Config\PHQConfig;
 use PHQ\Config\StorageHandlerConfig;
 use PHQ\Data\JobDataset;
+use PHQ\Exceptions\StorageSetupException;
 use PHQ\Jobs\IJob;
 use PHQ\PHQ;
 use spec\TestObjects\TestJob;
@@ -51,10 +52,26 @@ class PHQSpec extends ObjectBehavior
         PHQConfig $config,
         StorageHandlerConfig $storageConfig,
         TestQueueStorage $queueStorage
-    ){
-        $this->beConstructedWith(null,$config);
+    )
+    {
+        $this->beConstructedWith(null, $config);
         $config->getStorageConfig()->shouldBeCalled()->willReturn($storageConfig);
         $storageConfig->getStorage()->shouldBeCalled()->willReturn($queueStorage);
         $this->getStorageHandler()->shouldReturn($queueStorage);
+    }
+
+    //TODO finish this
+    function it_should_allow_you_to_perform_inital_setup_for_storage_handlers(
+        PHQConfig $config,
+        StorageHandlerConfig $storageConfig,
+        TestQueueStorage $queueStorage
+    )
+    {
+        $this->beConstructedWith(null, $config);
+        $config->getStorageConfig()->shouldBeCalled()->willReturn($storageConfig);
+        $storageConfig->getStorage()->shouldBeCalled()->willReturn($queueStorage);
+        $this->beConstructedWith($queueStorage);
+
+        $this->shouldNotThrow(StorageSetupException::class)->during('setup');
     }
 }

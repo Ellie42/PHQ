@@ -1,11 +1,12 @@
 <?php
 
 return [
+    "environment" => "development",
     "storage" => [
-        "handler" => \PHQ\Storage\MySQLQueueStorage::class,
+        "handler" => \PHQ\Storage\MySQL\MySQLQueueStorage::class,
         "options" => [
             "development" => [
-                "host" => "localhost",
+                "host" => "127.0.0.1",
                 "port" => 7777,
                 "user" => "root",
                 "pass" => "root",

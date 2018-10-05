@@ -75,4 +75,12 @@ class PHQ
             $this->storageHandler = $storageHandler;
         }
     }
+
+    /**
+     * Perform initial setup required for PHQ to run on a new application
+     */
+    public function setup()
+    {
+
+    }
 }
