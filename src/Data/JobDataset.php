@@ -42,8 +42,6 @@ class JobDataset extends Dataset
 
     public function __construct(array $props = [])
     {
-        $this->hydrate($props, [
-            "id", "class", "payload", "status", "retries"
-        ]);
+        $this->hydrate($props);
     }
 }
