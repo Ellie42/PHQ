@@ -19,6 +19,17 @@ Firstly choose a storage medium for the queue data, and implement or use an exis
     
 ```
 
+Before PHQ can be used some storage adapters may require initial setup.
+Call `setup()` on `PHQ\PHQ` after adding the storage adapter configuration to run
+the initial setup.
+
+This will be added as a setup script in composer in the future.
+
+```php
+    $phq->setup();
+```
+
+
 ### Creating Jobs
 
 Create a new job type that extends `\PHQ\Jobs\Job` and implement at least the `run` method.
