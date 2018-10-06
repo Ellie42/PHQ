@@ -12,14 +12,9 @@
       "spec\\TestObjects\\": "spec/TestObjects"
     }
   },
-  "require": {
-    "phpunit/phpunit": "^7.3",
-    "mikey179/vfsStream": "^1.6"
-  },
   "require-dev": {
+    "mikey179/vfsStream": "^1.6",
     "bossa/phpspec2-expect": "^3.0",
-    "ext-pdo_mysql": "^7.1",
-    "ext-PDO": "^7.1",
     "phpspec/phpspec": "^4.2",
     "leanphp/phpspec-code-coverage": "^4.2"
   },
