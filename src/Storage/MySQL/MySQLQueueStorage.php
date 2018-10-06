@@ -37,22 +37,24 @@ class MySQLQueueStorage implements IQueueStorageHandler, IQueueStorageConfigurab
         $this->table = $table;
     }
 
-    public function setup(array $options): void
+    public function setup(): void
     {
-        $pdo = $this->getOrCreatePdo($options);
-
-        $result = $pdo->exec("
-            CREATE TABLE phq_jobs{
-              id INT PRIMARY AUTO_INCREMENT,
+        $result = $this->pdo->exec("
+            CREATE TABLE phq_jobs(
+              id INT NOT NULL AUTO_INCREMENT,
               class VARCHAR(512) NOT NULL,
               payload BLOB NOT NULL,
               status INT(3) DEFAULT 0,
-              retries INT(9) DEFAULT 0
-            }
+              retries INT(9) DEFAULT 0,
+              
+              PRIMARY KEY (id)
+            )
         ");
 
         if ($result === false) {
-            throw new StorageSetupException("Failed to setup DB storage " . $pdo->errorInfo()[2], $pdo->errorCode());
+            throw new StorageSetupException(
+                "Failed to setup DB storage " . $this->pdo->errorInfo()[2]
+            );
         }
     }
 
@@ -71,7 +73,7 @@ class MySQLQueueStorage implements IQueueStorageHandler, IQueueStorageConfigurab
         $result = $statement->execute([(int)$id]);
 
         if (!$result) {
-            throw new Exception($this->pdo->errorInfo()[2], $this->pdo->errorCode());
+            throw new Exception($this->pdo->errorInfo()[2]);
         }
 
         $data = $statement->fetch(\PDO::FETCH_ASSOC);
@@ -106,17 +108,19 @@ class MySQLQueueStorage implements IQueueStorageHandler, IQueueStorageConfigurab
      */
     public function getNext(): ?JobDataset
     {
-        $statement = $this->pdo->prepare("
+        $sql = "
             SELECT `id`,`class`,`payload`,`status`, `retries`
             FROM {$this->table}
             WHERE status = ?
             ORDER BY id ASC
-        ");
+        ";
+
+        $statement = $this->pdo->prepare($sql);
 
         $result = $statement->execute([Job::STATUS_IDLE]);
 
         if (!$result) {
-            throw new \Exception($this->pdo->errorInfo()[2], $this->pdo->errorCode());
+            throw new \Exception($this->pdo->errorInfo()[2]);
         }
 
         $data = $statement->fetch(\PDO::FETCH_ASSOC);

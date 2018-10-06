@@ -6,14 +6,16 @@ use PHQ\Config\PHQConfig;
 use PHQ\Exceptions\ConfigurationException;
 use PHQ\Jobs\IJob;
 use PHQ\Jobs\Job;
+use PHQ\Storage\IQueueStorageConfigurable;
 use PHQ\Storage\IQueueStorageHandler;
+use PHQ\Storage\IQueueStorageNeedsSetup;
 
 class PHQ
 {
     /**
      * @var IQueueStorageHandler
      */
-    private $storageHandler;
+    private $storageHandler = null;
 
     /**
      * @var PHQConfig
@@ -25,11 +27,15 @@ class PHQ
         if ($config === null) {
             $this->config = new PHQConfig(getcwd());
             $this->config->load();
-        }else{
+        } else {
             $this->config = $config;
         }
 
-        $this->setupStorageHandler($storageHandler);
+        if ($storageHandler === null) {
+            $this->storageHandler = $this->createStorageHandler();
+        } else {
+            $this->storageHandler = $storageHandler;
+        }
     }
 
     public function getStorageHandler(): IQueueStorageHandler
@@ -58,22 +64,25 @@ class PHQ
     }
 
     /**
-     * @param IQueueStorageHandler $storageHandler
-     * @throws Exceptions\ConfigurationException
+     * Creates the storage handler object from the configuration file
+     * @return IQueueStorageHandler
+     * @throws ConfigurationException
      */
-    private function setupStorageHandler(?IQueueStorageHandler $storageHandler): void
+    private function createStorageHandler(): IQueueStorageHandler
     {
-        if ($storageHandler === null) {
-            $storageConfig = $this->config->getStorageConfig();
+        $storageConfig = $this->config->getStorageConfig();
 
-            if ($storageConfig === null) {
-                throw new ConfigurationException("No storage handler has been specified!");
-            }
-
-            $this->storageHandler = $storageConfig->getStorage();
-        } else {
-            $this->storageHandler = $storageHandler;
+        if ($storageConfig === null) {
+            throw new ConfigurationException("No storage handler has been specified!");
         }
+
+        $storageHandler = $storageConfig->getStorage();
+
+        if ($storageHandler instanceof IQueueStorageConfigurable) {
+            $storageHandler->init($storageConfig->options);
+        }
+
+        return $storageHandler;
     }
 
     /**
@@ -81,6 +90,8 @@ class PHQ
      */
     public function setup()
     {
-
+        if ($this->storageHandler instanceof IQueueStorageNeedsSetup) {
+            $this->storageHandler->setup();
+        }
     }
 }

@@ -9,6 +9,7 @@ use PHQ\Data\JobDataset;
 use PHQ\Exceptions\StorageSetupException;
 use PHQ\Jobs\IJob;
 use PHQ\PHQ;
+use Prophecy\Argument;
 use spec\TestObjects\TestJob;
 use spec\TestObjects\TestQueueStorage;
 
@@ -60,7 +61,6 @@ class PHQSpec extends ObjectBehavior
         $this->getStorageHandler()->shouldReturn($queueStorage);
     }
 
-    //TODO finish this
     function it_should_allow_you_to_perform_inital_setup_for_storage_handlers(
         PHQConfig $config,
         StorageHandlerConfig $storageConfig,
@@ -70,8 +70,8 @@ class PHQSpec extends ObjectBehavior
         $this->beConstructedWith(null, $config);
         $config->getStorageConfig()->shouldBeCalled()->willReturn($storageConfig);
         $storageConfig->getStorage()->shouldBeCalled()->willReturn($queueStorage);
-        $this->beConstructedWith($queueStorage);
+        $queueStorage->setup(Argument::any())->shouldBeCalled();
 
-        $this->shouldNotThrow(StorageSetupException::class)->during('setup');
+        $this->shouldNotThrow(\Exception::class)->during('setup');
     }
 }

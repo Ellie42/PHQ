@@ -13,8 +13,9 @@ use PHQ\Config\PHQConfig;
 use PHQ\Data\JobDataset;
 use PHQ\Jobs\IJob;
 use PHQ\Storage\IQueueStorageHandler;
+use PHQ\Storage\IQueueStorageNeedsSetup;
 
-class TestQueueStorage implements IQueueStorageHandler
+class TestQueueStorage implements IQueueStorageHandler, IQueueStorageNeedsSetup
 {
     public function enqueue(IJob $job) : bool
     {
@@ -47,5 +48,14 @@ class TestQueueStorage implements IQueueStorageHandler
     public function init(PHQConfig $config): void
     {
         // TODO: Implement init() method.
+    }
+
+    /**
+     * This method will be called for the initial application environment setup required to make this storage
+     * adapter function.
+     */
+    public function setup(): void
+    {
+        // TODO: Implement setup() method.
     }
 }
