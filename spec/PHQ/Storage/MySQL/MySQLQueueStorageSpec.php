@@ -5,6 +5,8 @@ namespace spec\PHQ\Storage\MySQL;
 use PDOStatement;
 use PhpSpec\ObjectBehavior;
 use PHQ\Data\JobDataset;
+use PHQ\Exceptions\ConfigurationException;
+use PHQ\Exceptions\StorageSetupException;
 use PHQ\Jobs\Job;
 use PHQ\Storage\MySQL\MySQLQueueStorage;
 use Prophecy\Argument;
@@ -42,6 +44,16 @@ class MySQLQueueStorageSpec extends ObjectBehavior
         ]);
 
         $this->get($id);
+    }
+
+    function it_should_throw_an_error_if_unable_to_retrieve_a_job_dataset_due_to_db_error(\PDOStatement $statement){
+        $this->pdo->prepare(Argument::any())->shouldBeCalled()->willReturn($statement);
+        $this->pdo->errorInfo()->shouldBeCalled()->willReturn([
+            null,null,"error"
+        ]);
+        $statement->execute(Argument::any())->shouldBeCalled()->willReturn(false);
+
+        $this->shouldThrow()->during('get',[1]);
     }
 
     function it_should_serialise_a_job_and_attempt_to_save(TestJob $job, PDOStatement $statement)
@@ -98,5 +110,61 @@ class MySQLQueueStorageSpec extends ObjectBehavior
         $statement->execute(Argument::containing(Job::STATUS_IDLE))->shouldBeCalled()->willReturn(false);
 
         $this->shouldThrow(\Exception::class)->during('getNext');
+    }
+
+    function it_should_create_the_required_tables_in_the_db_on_first_setup(PDOStatement $statement)
+    {
+        $expectedString = "
+            CREATE TABLE phq_jobs(
+            id INT NOT NULL AUTO_INCREMENT,
+            class VARCHAR(512) NOT NULL,
+            payload BLOB NOT NULL,
+            status INT(3) DEFAULT 0,
+            retries INT(9) DEFAULT 0,
+              
+            PRIMARY KEY (id)
+            )
+        ";
+        $this->pdo->exec($expectedString)->shouldBeCalled()->willReturn($statement);
+
+        $this->setup();
+    }
+
+    function it_should_throw_an_error_if_the_setup_fails()
+    {
+        $this->pdo->exec(Argument::any())->shouldBeCalled()->willReturn(false);
+        $this->pdo->errorInfo()->shouldBeCalled()->willReturn([
+            null,
+            null,
+            "Hello"
+        ]);
+
+        $this->shouldThrow(StorageSetupException::class)->during('setup');
+    }
+
+    function it_should_use_the_provided_pdo_on_init()
+    {
+        $this->init([]);
+        $this->getPdo()->shouldReturn($this->pdo);
+    }
+
+    function it_should_create_a_new_pdo_instance_using_the_passed_options()
+    {
+        $this->beConstructedWith(null);
+        $this->shouldThrow(\PDOException::class)->during('init',[[
+            "host" => "localhost",
+            "user" => "noooo",
+            "pass" => "hunter2",
+            "port" => 1920,
+            "database" => "no_db_here_today"
+        ]]);
+    }
+
+    function it_should_throw_an_exception_if_required_options_are_missing(){
+        $this->beConstructedWith(null);
+        $this->shouldThrow(ConfigurationException::class)->during('init',[[
+            "host" => "localhost",
+            "user" => "noooo",
+        ]]);
     }
 }

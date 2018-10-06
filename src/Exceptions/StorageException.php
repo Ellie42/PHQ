@@ -2,14 +2,14 @@
 /**
  * Created by PhpStorm.
  * User: sophiegauthier
- * Date: 05/10/2018
- * Time: 16:33
+ * Date: 06/10/2018
+ * Time: 11:20
  */
 
 namespace PHQ\Exceptions;
 
 
-class StorageSetupException extends StorageException
+class StorageException extends \Exception
 {
 
 }

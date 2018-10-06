@@ -12,15 +12,21 @@ namespace PHQ\Storage\MySQL;
 use Phinx\Console\PhinxApplication;
 use PHPUnit\Runner\Exception;
 use PHQ\Data\JobDataset;
+use PHQ\Exceptions\AssertionException;
+use PHQ\Exceptions\ConfigurationException;
+use PHQ\Exceptions\StorageRetrievalException;
 use PHQ\Exceptions\StorageSetupException;
 use PHQ\Jobs\IJob;
 use PHQ\Jobs\Job;
 use PHQ\Storage\IQueueStorageConfigurable;
 use PHQ\Storage\IQueueStorageHandler;
 use PHQ\Storage\IQueueStorageNeedsSetup;
+use PHQ\Traits\Assertions;
 
 class MySQLQueueStorage implements IQueueStorageHandler, IQueueStorageConfigurable, IQueueStorageNeedsSetup
 {
+    use Assertions;
+
     /**
      * @var \PDO
      */
@@ -37,17 +43,21 @@ class MySQLQueueStorage implements IQueueStorageHandler, IQueueStorageConfigurab
         $this->table = $table;
     }
 
+    /**
+     * Perform initial setup required for this storage handler to be used
+     * @throws StorageSetupException
+     */
     public function setup(): void
     {
         $result = $this->pdo->exec("
             CREATE TABLE phq_jobs(
-              id INT NOT NULL AUTO_INCREMENT,
-              class VARCHAR(512) NOT NULL,
-              payload BLOB NOT NULL,
-              status INT(3) DEFAULT 0,
-              retries INT(9) DEFAULT 0,
+            id INT NOT NULL AUTO_INCREMENT,
+            class VARCHAR(512) NOT NULL,
+            payload BLOB NOT NULL,
+            status INT(3) DEFAULT 0,
+            retries INT(9) DEFAULT 0,
               
-              PRIMARY KEY (id)
+            PRIMARY KEY (id)
             )
         ");
 
@@ -61,6 +71,7 @@ class MySQLQueueStorage implements IQueueStorageHandler, IQueueStorageConfigurab
     /**
      * @param $id
      * @return JobDataset
+     * @throws StorageRetrievalException
      */
     function get($id): JobDataset
     {
@@ -73,7 +84,7 @@ class MySQLQueueStorage implements IQueueStorageHandler, IQueueStorageConfigurab
         $result = $statement->execute([(int)$id]);
 
         if (!$result) {
-            throw new Exception($this->pdo->errorInfo()[2]);
+            throw new StorageRetrievalException($this->pdo->errorInfo()[2]);
         }
 
         $data = $statement->fetch(\PDO::FETCH_ASSOC);
@@ -135,6 +146,7 @@ class MySQLQueueStorage implements IQueueStorageHandler, IQueueStorageConfigurab
     /**
      * Initialise the storage handler with the config
      * @param array $options
+     * @throws ConfigurationException
      */
     public function init(array $options): void
     {
@@ -145,16 +157,42 @@ class MySQLQueueStorage implements IQueueStorageHandler, IQueueStorageConfigurab
      * Creates a new instance of PDO unless one has already been set
      * @param array $options
      * @return \PDO
+     * @throws ConfigurationException
      */
     private function getOrCreatePdo(array $options): \PDO
     {
+        //PDO has already been provided
         if ($this->pdo !== null) {
             return $this->pdo;
+        }
+
+        //Set default port
+        if (!isset($options['port'])) {
+            $options['port'] = 3306;
+        }
+
+        //Required options for the PDO instance to be created
+        $requiredOptions = ["host", "port", "database", "user", "pass"];
+
+        try {
+            $this->assertKeysInArray($options, $requiredOptions);
+        } catch (AssertionException $e) {
+            $missingOptions = array_diff_key($options, array_flip($requiredOptions));
+            $missingOptionsString = implode(', ', $missingOptions);
+
+            throw new ConfigurationException(
+                "Failed to setup storage adapter, missing required options '$missingOptionsString'"
+            );
         }
 
         return new \PDO(
             "mysql:host={$options['host']};port={$options['port']}};dbname={$options['database']}",
             $options['user'], $options['pass']
         );
+    }
+
+    public function getPdo(): \PDO
+    {
+        return $this->pdo;
     }
 }
