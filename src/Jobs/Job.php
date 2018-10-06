@@ -2,6 +2,7 @@
 
 namespace PHQ\Jobs;
 
+use PHQ\Data\Dataset;
 use PHQ\Data\JobDataset;
 
 abstract class Job implements IJob
@@ -43,7 +44,7 @@ abstract class Job implements IJob
         $this->data->hydrate(json_decode($data, true));
     }
 
-    public function getData()
+    public function getData() : Dataset
     {
         return $this->data;
     }

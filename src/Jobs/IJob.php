@@ -2,6 +2,8 @@
 
 namespace PHQ\Jobs;
 
+use PHQ\Data\Dataset;
+
 interface IJob
 {
     /**
@@ -21,4 +23,9 @@ interface IJob
      * @return int
      */
     function run(): int;
+
+    /**
+     * @return Dataset
+     */
+    function getData() : Dataset;
 }

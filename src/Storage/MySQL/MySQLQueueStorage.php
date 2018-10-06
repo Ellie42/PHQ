@@ -89,7 +89,7 @@ class MySQLQueueStorage implements IQueueStorageHandler, IQueueStorageConfigurab
 
         $data = $statement->fetch(\PDO::FETCH_ASSOC);
 
-        return new JobDataset($data);
+        return $this->createDatasetFromRow($data);
     }
 
     /**
@@ -98,7 +98,7 @@ class MySQLQueueStorage implements IQueueStorageHandler, IQueueStorageConfigurab
      */
     public function enqueue(IJob $job): bool
     {
-        $data = $job->serialise();
+        $data = json_encode($job->getData()->getPayload());
 
         $statement = $this->pdo->prepare("
             INSERT INTO {$this->table} (`class`, `payload`) VALUES (?, ?)
@@ -140,7 +140,7 @@ class MySQLQueueStorage implements IQueueStorageHandler, IQueueStorageConfigurab
             return null;
         }
 
-        return new JobDataset($data);
+        return $this->createDatasetFromRow($data);
     }
 
     /**
@@ -203,5 +203,18 @@ class MySQLQueueStorage implements IQueueStorageHandler, IQueueStorageConfigurab
     public function getTable()
     {
         return $this->table;
+    }
+
+    /**
+     * @param $data
+     * @return JobDataset
+     */
+    private function createDatasetFromRow($data): JobDataset
+    {
+        if (isset($data['payload']) && strlen($data['payload']) > 0) {
+            $data['payload'] = json_decode($data['payload'], true);
+        }
+
+        return new JobDataset($data);
     }
 }

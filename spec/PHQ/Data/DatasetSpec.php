@@ -61,7 +61,7 @@ class DatasetSpec extends ObjectBehavior
         $this->shouldThrow(\BadMethodCallException::class)->during('setA');
     }
 
-    function it_should_be_able_to_convert_all_data_to_an_array(){
+    function it_should_be_able_to_convert_all_data_to_an_array_ignoring_unset_values(){
         $data = ["a" => 1, "b" => 2];
 
         $this->useTestDataset();
@@ -69,7 +69,6 @@ class DatasetSpec extends ObjectBehavior
         $this->toArray()->shouldReturn([
             "a" => 1,
             "b" => 2,
-            "setter" => null
         ]);
     }
 

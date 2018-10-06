@@ -37,35 +37,51 @@ class MySQLQueueStorageSpec extends ObjectBehavior
 
         $statement->execute([(int)$id])->shouldBeCalled()->willReturn(true);
 
+        $payload = [
+            "a" => 1,
+            "b" => 2,
+        ];
+
         $statement->fetch(\PDO::FETCH_ASSOC)->shouldBeCalled()->willReturn([
             "id" => $id,
             "class" => "TestClass",
-            "payload" => "abc"
+            "payload" => json_encode($payload)
         ]);
 
-        $this->get($id);
+        $dataset = $this->get($id)->shouldBeAnInstanceOf(JobDataset::class);
+
+        expect($dataset->getPayload())->shouldBe($payload);
     }
 
-    function it_should_throw_an_error_if_unable_to_retrieve_a_job_dataset_due_to_db_error(\PDOStatement $statement){
+    function it_should_throw_an_error_if_unable_to_retrieve_a_job_dataset_due_to_db_error(\PDOStatement $statement)
+    {
         $this->pdo->prepare(Argument::any())->shouldBeCalled()->willReturn($statement);
         $this->pdo->errorInfo()->shouldBeCalled()->willReturn([
-            null,null,"error"
+            null, null, "error"
         ]);
         $statement->execute(Argument::any())->shouldBeCalled()->willReturn(false);
 
-        $this->shouldThrow()->during('get',[1]);
+        $this->shouldThrow()->during('get', [1]);
     }
 
-    function it_should_serialise_a_job_and_attempt_to_save(TestJob $job, PDOStatement $statement)
+    function it_should_serialise_a_job_and_attempt_to_save(PDOStatement $statement)
     {
         $payload = '{"test":"data"}';
-        $job->serialise()->shouldBeCalled()->willReturn($payload);
+
+        $job = new TestJob(new JobDataset([
+            "payload" => [
+                "test" => "data"
+            ]
+        ]));
 
         $this->pdo->prepare(Argument::containingString(
             "INSERT INTO phq_jobs (`class`, `payload`) VALUES (?, ?)")
         )->shouldBeCalled()->willReturn($statement);
 
-        $statement->execute(Argument::size(2))->shouldBeCalled()->willReturn(true);
+        $statement->execute([
+            TestJob::class,
+            $payload
+        ])->shouldBeCalled()->willReturn(true);
 
         $this->enqueue($job);
     }
@@ -78,15 +94,21 @@ class MySQLQueueStorageSpec extends ObjectBehavior
 
         $statement->execute(Argument::containing(Job::STATUS_IDLE))->shouldBeCalled()->willReturn(true);
 
+        $payload = [
+            "test" => "abc"
+        ];
+
         $statement->fetch(\PDO::FETCH_ASSOC)->shouldBeCalled()->willReturn([
             "id" => 4,
             "class" => "TestClass",
-            "payload" => "abc",
+            "payload" => json_encode($payload),
             "status" => 0,
             "retries" => 0
         ]);
 
-        $this->getNext()->shouldBeAnInstanceOf(JobDataset::class);
+        $dataset = $this->getNext()->shouldBeAnInstanceOf(JobDataset::class);
+
+        expect($dataset->getPayload())->shouldBe($payload);
     }
 
     function it_should_return_null_if_there_are_no_more_jobs(PDOStatement $statement)
@@ -148,7 +170,8 @@ class MySQLQueueStorageSpec extends ObjectBehavior
         $this->getPdo()->shouldReturn($this->pdo);
     }
 
-    function it_should_setup_properties_using_specified_options(){
+    function it_should_setup_properties_using_specified_options()
+    {
         $this->getTable()->shouldNotBe("new_table");
         $this->init([
             "table" => "new_table"
@@ -159,7 +182,7 @@ class MySQLQueueStorageSpec extends ObjectBehavior
     function it_should_create_a_new_pdo_instance_using_the_passed_options()
     {
         $this->beConstructedWith(null);
-        $this->shouldThrow(\PDOException::class)->during('init',[[
+        $this->shouldThrow(\PDOException::class)->during('init', [[
             "host" => "localhost",
             "user" => "noooo",
             "pass" => "hunter2",
@@ -168,9 +191,10 @@ class MySQLQueueStorageSpec extends ObjectBehavior
         ]]);
     }
 
-    function it_should_throw_an_exception_if_required_options_are_missing(){
+    function it_should_throw_an_exception_if_required_options_are_missing()
+    {
         $this->beConstructedWith(null);
-        $this->shouldThrow(ConfigurationException::class)->during('init',[[
+        $this->shouldThrow(ConfigurationException::class)->during('init', [[
             "host" => "localhost",
             "user" => "noooo",
         ]]);

@@ -44,6 +44,19 @@ class MyJob extends \PHQ\Jobs\Job{
 }
 ```
 
+Jobs have access to the data that they were created with as a property on `PHQ\Jobs\Job`
+
+```php
+class MyJob extends \PHQ\Jobs\Job{
+    public function run(): int{
+        $jobData = $this->data->getPayload();
+        
+        return \PHQ\Jobs\Job::STATUS_SUCCESS;
+    }
+}
+
+```
+
 ### Adding jobs to queue
 
 Add jobs to the queue(managed by the chosen storage handler) by calling `enqueue(IJob)` on `PHQ\PHQ`.

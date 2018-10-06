@@ -2,6 +2,7 @@
 
 namespace spec\PHQ\Jobs;
 
+use PHQ\Data\Dataset;
 use PHQ\Data\JobDataset;
 use PHQ\Jobs\Job;
 use PhpSpec\ObjectBehavior;
@@ -69,4 +70,5 @@ class JobTest extends Job{
     {
         // TODO: Implement run() method.
     }
+
 }
