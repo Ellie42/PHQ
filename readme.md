@@ -89,7 +89,7 @@ instead pass an instance of `\PHQ\Data\JobDataset` as the first parameter which 
 `retries` and `payload` properties directly.
 
 ```php
-    $job = new MyJob(new JobDataset(["status" => 0,"payload" => ["a" => "b"]]]));
+    $job = new MyJob(new JobDataset(["status" => \PHQ\Jobs\Job::STATUS_IDLE,"payload" => ["a" => "b"]]]));
 ```
 
 ### Adding jobs to queue
