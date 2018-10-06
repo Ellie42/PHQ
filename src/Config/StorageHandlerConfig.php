@@ -27,10 +27,19 @@ class StorageHandlerConfig
      */
     public $options;
 
+    /**
+     * @var IQueueStorageHandler
+     */
+    private $instance = null;
+
     public function __construct(string $class, array $options)
     {
         $this->class = $class;
         $this->options = $options;
+    }
+
+    public function setHandlerInstance(IQueueStorageHandler $instance){
+        $this->instance = $instance;
     }
 
     /**
@@ -39,18 +48,18 @@ class StorageHandlerConfig
      */
     public function getStorage() : IQueueStorageHandler
     {
-        $className = $this->class;
+        if($this->instance === null){
+            if (!is_subclass_of($this->class, IQueueStorageHandler::class)) {
+                throw new ConfigurationException("{$this->class} is not a valid storage handler, must implement " . IQueueStorageHandler::class);
+            }
 
-        if (!is_subclass_of($className, IQueueStorageHandler::class)) {
-            throw new ConfigurationException("$className is not a valid storage handler, must implement " . IQueueStorageHandler::class);
+            $this->instance = new $this->class();
         }
 
-        $obj = new $className();
-
-        if($obj instanceof IQueueStorageConfigurable){
-            $obj->init($this->options);
+        if($this->instance instanceof IQueueStorageConfigurable){
+            $this->instance->init($this->options);
         }
 
-        return $obj;
+        return $this->instance;
     }
 }

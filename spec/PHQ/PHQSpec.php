@@ -6,10 +6,12 @@ use PhpSpec\ObjectBehavior;
 use PHQ\Config\PHQConfig;
 use PHQ\Config\StorageHandlerConfig;
 use PHQ\Data\JobDataset;
-use PHQ\Exceptions\StorageSetupException;
+use PHQ\Exceptions\ConfigurationException;
+use PHQ\Exceptions\PHQException;
 use PHQ\Jobs\IJob;
 use PHQ\PHQ;
 use Prophecy\Argument;
+use spec\PHQ\Jobs\JobTest;
 use spec\TestObjects\TestJob;
 use spec\TestObjects\TestQueueStorage;
 
@@ -61,6 +63,16 @@ class PHQSpec extends ObjectBehavior
         $this->getStorageHandler()->shouldReturn($queueStorage);
     }
 
+    function it_should_throw_an_error_if_no_storage_has_been_configured_or_set(
+        PHQConfig $config
+    )
+    {
+        $this->beConstructedWith(null, $config);
+        $config->getStorageConfig()->shouldBeCalled()->willReturn(null);
+        $this->shouldThrow(ConfigurationException::class)->duringInstantiation();
+    }
+
+
     function it_should_allow_you_to_perform_inital_setup_for_storage_handlers(
         PHQConfig $config,
         StorageHandlerConfig $storageConfig,
@@ -74,4 +86,34 @@ class PHQSpec extends ObjectBehavior
 
         $this->shouldNotThrow(\Exception::class)->during('setup');
     }
+
+    function it_should_throw_error_if_job_class_does_not_exist_when_creating()
+    {
+        $jobDataset = new JobDataset([
+            "class" => "notarealjob"
+        ]);
+
+        $this->shouldThrow(PHQException::class)->during('createJobFromJobEntry', [$jobDataset]);
+    }
+
+    function it_should_throw_error_if_job_class_is_not_a_valid_job()
+    {
+        $jobDataset = new JobDataset([
+            "class" => JobNotGoodEnough::class
+        ]);
+
+        $this->shouldThrow(PHQException::class)->during('createJobFromJobEntry', [$jobDataset]);
+    }
+
+    function it_should_be_able_to_create_a_job_object_from_job_data()
+    {
+        $this->createJobFromJobEntry(new JobDataset([
+            "class" => TestJob::class
+        ]))->shouldBeAnInstanceOf(TestJob::class);
+    }
+}
+
+class JobNotGoodEnough
+{
+
 }

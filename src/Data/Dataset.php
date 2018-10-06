@@ -25,7 +25,7 @@ class Dataset
      * @param array $props
      * @param array $whitelistKeys
      */
-    protected function hydrate(array $props, array $whitelistKeys = [])
+    public function hydrate(array $props, array $whitelistKeys = [])
     {
         //Whitelist is optional as if a property does not exist on the class it will throw an error
         if(count($whitelistKeys) === 0){
@@ -71,5 +71,14 @@ class Dataset
         }
 
         throw new \BadMethodCallException("Method $name does not exist on class $className");
+    }
+
+    /**
+     * Return an array of all data in the dataset
+     * @return array
+     */
+    public function toArray()
+    {
+        return get_object_vars($this);
     }
 }

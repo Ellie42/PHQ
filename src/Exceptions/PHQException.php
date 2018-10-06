@@ -3,13 +3,13 @@
  * Created by PhpStorm.
  * User: sophiegauthier
  * Date: 06/10/2018
- * Time: 11:20
+ * Time: 13:59
  */
 
 namespace PHQ\Exceptions;
 
 
-class StorageException extends PHQException
+class PHQException extends \Exception
 {
 
 }

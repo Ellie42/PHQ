@@ -25,48 +25,26 @@ abstract class Job implements IJob
     }
 
     /**
+     * Serialise the jobs dataset
      * @return string
      */
     function serialise(): string
     {
         $data = $this->data;
-        return json_encode($data);
+        return json_encode($data->toArray());
     }
 
     /**
+     * Deserialise data and create/hydrate the job dataset
      * @param string $data
      */
     function deserialise(string $data): void
     {
-        $this->data = json_decode($data, true);
+        $this->data->hydrate(json_decode($data, true));
     }
 
-    /**
-     * Returns an instance of IJob based on the class name in the JobDataset and sets the payload
-     * @param JobDataset $jobData
-     * @return IJob
-     * @throws \Exception
-     */
-    static function fromJobEntry(JobDataset $jobData): IJob
+    public function getData()
     {
-        if (!class_exists($jobData->class)) {
-            throw new \Exception("Class {$jobData->class} does not exist!");
-        }
-
-        $className = $jobData->class;
-
-        //Remove the class property from the dataset as the job class will reuse this dataset
-        unset($jobData->class);
-
-        if (!(is_subclass_of($className, IJob::class))) {
-            throw new \Exception("$className is not an instance of " . IJob::class);
-        }
-
-        /**
-         * @var IJob
-         */
-        $obj = new $className($jobData);
-
-        return $obj;
+        return $this->data;
     }
 }

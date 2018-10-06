@@ -39,4 +39,5 @@ class JobDataset extends Dataset
      * @var int
      */
     public $retries;
+
 }

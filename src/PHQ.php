@@ -3,7 +3,9 @@
 namespace PHQ;
 
 use PHQ\Config\PHQConfig;
+use PHQ\Data\JobDataset;
 use PHQ\Exceptions\ConfigurationException;
+use PHQ\Exceptions\PHQException;
 use PHQ\Jobs\IJob;
 use PHQ\Jobs\Job;
 use PHQ\Storage\IQueueStorageConfigurable;
@@ -60,7 +62,33 @@ class PHQ
     {
         $job = $this->storageHandler->getNext();
 
-        return Job::fromJobEntry($job);
+        return $this->createJobFromJobEntry($job);
+    }
+
+    /**
+     * Returns an instance of IJob based on the class name in the JobDataset and sets the payload
+     * @param JobDataset $jobData
+     * @return IJob
+     * @throws \Exception
+     */
+    public function createJobFromJobEntry(JobDataset $jobData): IJob
+    {
+        $className = $jobData->getClass();
+
+        if (!class_exists($className)) {
+            throw new PHQException("Class {$className} does not exist!");
+        }
+
+        if (!(is_subclass_of($className, IJob::class))) {
+            throw new PHQException("$className is not an instance of " . IJob::class);
+        }
+
+        /**
+         * @var IJob
+         */
+        $obj = new $className($jobData);
+
+        return $obj;
     }
 
     /**
@@ -76,13 +104,7 @@ class PHQ
             throw new ConfigurationException("No storage handler has been specified!");
         }
 
-        $storageHandler = $storageConfig->getStorage();
-
-        if ($storageHandler instanceof IQueueStorageConfigurable) {
-            $storageHandler->init($storageConfig->options);
-        }
-
-        return $storageHandler;
+        return $storageConfig->getStorage();
     }
 
     /**

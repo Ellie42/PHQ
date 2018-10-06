@@ -56,6 +56,23 @@ class DatasetSpec extends ObjectBehavior
         $this->getA()->shouldReturn("another test");
     }
 
+    function it_should_throw_error_if_calling_setter_with_no_values(){
+        $this->useTestDataset();
+        $this->shouldThrow(\BadMethodCallException::class)->during('setA');
+    }
+
+    function it_should_be_able_to_convert_all_data_to_an_array(){
+        $data = ["a" => 1, "b" => 2];
+
+        $this->useTestDataset();
+        $this->beConstructedWith($data);
+        $this->toArray()->shouldReturn([
+            "a" => 1,
+            "b" => 2,
+            "setter" => null
+        ]);
+    }
+
     private function useTestDataset(): void
     {
         $this->beAnInstanceOf(TestDataset::class);
@@ -65,6 +82,7 @@ class DatasetSpec extends ObjectBehavior
 class TestDataset extends Dataset
 {
     public $a;
+    public $b;
     public $setter;
 
     public function hydrate(array $props, array $whitelistKeys = [])
