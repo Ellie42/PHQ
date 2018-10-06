@@ -28,9 +28,9 @@ class Dataset
     public function hydrate(array $props, array $whitelistKeys = [])
     {
         //Whitelist is optional as if a property does not exist on the class it will throw an error
-        if(count($whitelistKeys) === 0){
+        if (count($whitelistKeys) === 0) {
             $whitelisted = $props;
-        }else{
+        } else {
             $whitelisted = $this->getWhitelistedValues($props, $whitelistKeys);
         }
 
@@ -67,7 +67,8 @@ class Dataset
                 throw new \BadMethodCallException("Setter ${name} cannot be called without a value argument!");
             }
 
-            return $this->$propName = $arguments[0];
+            $this->$propName = $arguments[0];
+            return $this;
         }
 
         throw new \BadMethodCallException("Method $name does not exist on class $className");
@@ -79,7 +80,7 @@ class Dataset
      */
     public function toArray()
     {
-        return array_filter(get_object_vars($this),function($val){
+        return array_filter(get_object_vars($this), function ($val) {
             return $val !== null;
         });
     }

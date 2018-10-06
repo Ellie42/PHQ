@@ -4,6 +4,8 @@ namespace PHQ\Jobs;
 
 use PHQ\Data\Dataset;
 use PHQ\Data\JobDataset;
+use PHQ\Data\Payload;
+use PHQ\Exceptions\PHQException;
 
 abstract class Job implements IJob
 {
@@ -16,9 +18,19 @@ abstract class Job implements IJob
      */
     protected $data;
 
-    public function __construct(JobDataset $dataset = null)
+    /**
+     * If passing a payload object then only the payload property will be set
+     * otherwise all properties will be set
+     * Job constructor.
+     * @param Dataset|null|JobDataset|Payload $dataset
+     */
+    public function __construct(Dataset $dataset = null)
     {
-        if ($dataset === null) {
+        if ($dataset instanceof Payload) {
+            $this->data = new JobDataset([
+                "payload" => $dataset->toArray()
+            ]);
+        } else if ($dataset === null) {
             $this->data = new JobDataset();
         } else {
             $this->data = $dataset;
@@ -44,8 +56,24 @@ abstract class Job implements IJob
         $this->data->hydrate(json_decode($data, true));
     }
 
-    public function getData() : Dataset
+    public function getData(): Dataset
     {
         return $this->data;
+    }
+
+    /**
+     * Return the payload as an instance of the requested class.
+     * I wish php had generics D:
+     * @param string $payloadClass
+     * @return Payload
+     * @throws PHQException
+     */
+    public function getPayload(string $payloadClass): Payload
+    {
+        if (!is_subclass_of($payloadClass, Payload::class)) {
+            throw new PHQException("$payloadClass is not a valid payload!");
+        }
+
+        return new $payloadClass($this->data->getPayload());
     }
 }

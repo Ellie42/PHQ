@@ -23,8 +23,8 @@ class JobDataset extends Dataset
     public $class;
 
     /**
-     * Serialised job payload
-     * @var string
+     * Deserialised Job Payload
+     * @var array
      */
     public $payload;
 
