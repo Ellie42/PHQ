@@ -9,6 +9,11 @@
 namespace PHQ\Storage;
 
 
+/**
+ * Indicates that a storage handler can be configured from the phqconfig file
+ * Interface IQueueStorageConfigurable
+ * @package PHQ\Storage
+ */
 interface IQueueStorageConfigurable
 {
     /**

@@ -9,6 +9,11 @@
 namespace PHQ\Storage;
 
 
+/**
+ * Indicates that a storage handler requires a pre-setup phase before the application can be used
+ * Interface IQueueStorageNeedsSetup
+ * @package PHQ\Storage
+ */
 interface IQueueStorageNeedsSetup
 {
     /**
