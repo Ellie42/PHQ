@@ -148,6 +148,14 @@ class MySQLQueueStorageSpec extends ObjectBehavior
         $this->getPdo()->shouldReturn($this->pdo);
     }
 
+    function it_should_setup_properties_using_specified_options(){
+        $this->getTable()->shouldNotBe("new_table");
+        $this->init([
+            "table" => "new_table"
+        ]);
+        $this->getTable()->shouldBe("new_table");
+    }
+
     function it_should_create_a_new_pdo_instance_using_the_passed_options()
     {
         $this->beConstructedWith(null);

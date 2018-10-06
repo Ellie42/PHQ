@@ -150,6 +150,10 @@ class MySQLQueueStorage implements IQueueStorageHandler, IQueueStorageConfigurab
      */
     public function init(array $options): void
     {
+        if (isset($options['table'])) {
+            $this->table = $options['table'];
+        }
+
         $this->pdo = $this->getOrCreatePdo($options);
     }
 
@@ -194,5 +198,10 @@ class MySQLQueueStorage implements IQueueStorageHandler, IQueueStorageConfigurab
     public function getPdo(): \PDO
     {
         return $this->pdo;
+    }
+
+    public function getTable()
+    {
+        return $this->table;
     }
 }
