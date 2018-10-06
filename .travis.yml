@@ -2,4 +2,6 @@ language: php
 php:
 - '7.2'
 install: composer update
-script: ./vendor/bin/phpspec run
+script: ./vendor/bin/phpspec run -c phpspec.coverage.yml
+after_success:
+- bash <(curl -s https://codecov.io/bash)

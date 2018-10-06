@@ -1,4 +1,4 @@
-# PHQ
+# PHQ [![Build Status](https://travis-ci.com/Ellie42/PHQ.svg?branch=master)](https://travis-ci.com/Ellie42/PHQ)
 
 Job queue system written in PHP
 
