@@ -58,9 +58,7 @@ class DatasetSpec extends ObjectBehavior
 
     private function useTestDataset(): void
     {
-        $this->beConstructedThrough(function () {
-            return new TestDataset();
-        });
+        $this->beAnInstanceOf(TestDataset::class);
     }
 }
 
