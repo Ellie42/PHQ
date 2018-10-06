@@ -186,3 +186,7 @@ echo $data->getPropertyA();
 */
 var_dump($data->toArray());
 ```
+
+### TODO
+
+* Add update method to storage handlers
