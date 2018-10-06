@@ -44,17 +44,52 @@ class MyJob extends \PHQ\Jobs\Job{
 }
 ```
 
+### Payloads
+
+Jobs can use a custom payload class which will hold all the properties that the job needs.
+This allows strict contracts of which data can/will be provided to the job.
+
+#### Creating a payload
+
+A payload class must extend `\PHQ\Data\Payload` and should define it's allowed values
+as public properties.
+
+A payload is an extension of `\PHQ\Data\Dataset` and so can define setters and getters (see: [Datasets](#datasets))
+
+```php
+class MyJobPayload extends \PHQ\Data\Payload{
+    public $propA;
+}
+```
+
 Jobs have access to the data that they were created with as a property on `PHQ\Jobs\Job`
 
 ```php
 class MyJob extends \PHQ\Jobs\Job{
     public function run(): int{
-        $jobData = $this->data->getPayload();
+        $jobPayload = $this->getPayload(MyJobPayload::class);
         
         return \PHQ\Jobs\Job::STATUS_SUCCESS;
     }
 }
 
+```
+
+### Configuring Jobs
+
+You can create and enqueue a job with no properties however if you need some more specific data for the job to run you can 
+pass the payload as the first parameter when instantiating a job.
+
+```php
+    $job = new MyJob(new MyJobPayload(["propA" => "propB"]));
+```
+
+If for some reason, such as when creating a new storage handler, you need to update the base Job properties, you can 
+instead pass an instance of `\PHQ\Data\JobDataset` as the first parameter which will allow you to update the `class`, `status`,
+`retries` and `payload` properties directly.
+
+```php
+    $job = new MyJob(new JobDataset(["status" => 0,"payload" => ["a" => "b"]]]));
 ```
 
 ### Adding jobs to queue
@@ -115,4 +150,39 @@ Example:
             ]
         ]
     ];
+```
+
+### Datasets
+
+Datasets are any class that extends `PHQ\Data\Dataset` and are used purely as data containers. 
+The allowed keys are defined by adding public properties to your class and should be accessed using setters and getters.
+
+Setters and getters are automatically handled by the dataset, just call `(set|get)ucfirst($propertyName)` eg. `setName($val)`, `getName()`.
+
+You can override the setters and getters but declaring the methods in the child class.
+
+```php
+class CustomDataset extends \PHQ\Data\Dataset{
+    public $propertyA;
+    public $propertyB;
+}
+
+```
+You can pass the data to fill the dataset with as the constructor parameter as an array of `$property => $value`.
+Attempting to pass data this with property names that do not exist on the dataset will throw an exception.
+
+```php
+$data = new CustomDataset([
+    "propertyA" => "AAA"
+]);
+
+$data->setPropertyB("BBB");
+
+// "AAA"
+echo $data->getPropertyA();
+
+/**
+*   You can also call toArray() on a dataset to return all properties as a pure array.
+*/
+var_dump($data->toArray());
 ```
