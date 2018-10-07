@@ -9,6 +9,7 @@ use PHQ\Data\JobDataset;
 use PHQ\Exceptions\ConfigurationException;
 use PHQ\Exceptions\PHQException;
 use PHQ\Jobs\IJob;
+use PHQ\Jobs\Job;
 use PHQ\PHQ;
 use Prophecy\Argument;
 use spec\PHQ\Jobs\JobTest;
@@ -122,6 +123,16 @@ class PHQSpec extends ObjectBehavior
         $this->storage->update($job->getData())->shouldBeCalled()->willReturn(true);
 
         $this->update($job)->shouldReturn(true);
+    }
+
+    function it_should_run_the_next_job_and_update_status_when_complete(Job $job){
+        $dataset = new JobDataset([
+            "class" => TestJob::class
+        ]);
+
+        $this->storage->getNext()->shouldBeCalled()->willReturn($dataset);
+        $this->storage->update($dataset)->shouldBeCalled();
+        $this->process();
     }
 }
 
