@@ -58,4 +58,9 @@ class TestQueueStorage implements IQueueStorageHandler, IQueueStorageNeedsSetup
     {
         // TODO: Implement setup() method.
     }
+
+    public function update(JobDataset $jobDataset): bool
+    {
+        // TODO: Implement update() method.
+    }
 }

@@ -111,6 +111,18 @@ class PHQSpec extends ObjectBehavior
             "class" => TestJob::class
         ]))->shouldBeAnInstanceOf(TestJob::class);
     }
+
+    function it_should_be_able_to_update_a_job_status(){
+        $jobData = new JobDataset([
+            "id" => 1,
+        ]);
+
+        $job = new TestJob($jobData);
+
+        $this->storage->update($job->getData())->shouldBeCalled()->willReturn(true);
+
+        $this->update($job)->shouldReturn(true);
+    }
 }
 
 class JobNotGoodEnough

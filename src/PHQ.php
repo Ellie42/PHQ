@@ -116,4 +116,14 @@ class PHQ
             $this->storageHandler->setup();
         }
     }
+
+    /**
+     * Update a job
+     * @param Job $job
+     * @return bool
+     */
+    public function update(Job $job) : bool
+    {
+        return $this->storageHandler->update($job->getData());
+    }
 }

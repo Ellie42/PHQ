@@ -40,4 +40,9 @@ class JobDataset extends Dataset
      */
     public $retries;
 
+    public function getSerialisedPayload()
+    {
+        return json_encode($this->payload);
+    }
+
 }

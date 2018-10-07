@@ -68,6 +68,11 @@ class StorageHandlerConfigurableTest implements IQueueStorageHandler, IQueueStor
     {
         //Stub
     }
+
+    public function update(JobDataset $jobDataset): bool
+    {
+        //Stub
+    }
 }
 
 class StorageHandlerTest implements IQueueStorageHandler
@@ -83,6 +88,11 @@ class StorageHandlerTest implements IQueueStorageHandler
     }
 
     public function getNext(): ?JobDataset
+    {
+        //Stub
+    }
+
+    public function update(JobDataset $jobDataset): bool
     {
         //Stub
     }

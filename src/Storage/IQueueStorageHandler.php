@@ -21,6 +21,13 @@ interface IQueueStorageHandler
     public function get($id): ?JobDataset;
 
     /**
+     * Update the job entry
+     * @param JobDataset $jobDataset
+     * @return bool
+     */
+    public function update(JobDataset $jobDataset): bool;
+
+    /**
      * Save job data
      * @param IJob $job
      * @return bool

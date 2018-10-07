@@ -69,6 +69,7 @@ class DatasetSpec extends ObjectBehavior
         $this->toArray()->shouldReturn([
             "a" => 1,
             "b" => 2,
+            "setter" => null,
         ]);
     }
 

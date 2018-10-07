@@ -6,6 +6,7 @@ use PDOStatement;
 use PhpSpec\ObjectBehavior;
 use PHQ\Data\JobDataset;
 use PHQ\Exceptions\ConfigurationException;
+use PHQ\Exceptions\StorageException;
 use PHQ\Exceptions\StorageSetupException;
 use PHQ\Jobs\Job;
 use PHQ\Storage\MySQL\MySQLQueueStorage;
@@ -198,5 +199,39 @@ class MySQLQueueStorageSpec extends ObjectBehavior
             "host" => "localhost",
             "user" => "noooo",
         ]]);
+    }
+
+    function it_should_not_be_able_to_update_a_job_without_an_id()
+    {
+        $this->shouldThrow(StorageException::class)->during('update', [new JobDataset()]);
+    }
+
+    function it_should_throw_a_storage_exception_when_a_pdo_error_is_thrown_during_update(\PDOStatement $statement)
+    {
+        $this->pdo->prepare(Argument::any())->shouldBeCalled()->willReturn($statement);
+        $this->pdo->errorInfo()->shouldBeCalled()->willReturn([null, null, "error"]);
+        $statement->execute(Argument::any())->shouldBeCalled()->willThrow(\PDOException::class);
+        $this->shouldThrow(StorageException::class)->during('update', [new JobDataset([
+            "id" => 10
+        ])]);
+    }
+
+    function it_should_be_able_to_update_a_job(\PDOStatement $statement)
+    {
+        $jobData = [
+            "payload" => [],
+            "status" => Job::STATUS_SUCCESS,
+            "id" => 1
+        ];
+
+        $job = new JobDataset($jobData);
+
+        $this->pdo->prepare("
+            UPDATE phq_jobs SET class = ?, payload = ?, status = ?, retries = ?
+            WHERE id = ?
+        ")->shouldBeCalled()->willReturn($statement);
+        $statement->execute([null, "[]", Job::STATUS_SUCCESS, null, 1])->shouldBeCalled()->willReturn(true);
+
+        $this->update($job)->shouldReturn(true);
     }
 }

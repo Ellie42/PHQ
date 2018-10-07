@@ -21,4 +21,10 @@ $phq->enqueue($job);
 $job = $phq->getNext();
 
 //Run the job
-$job->run();
+$status = $job->run();
+
+//Set the new job status
+$job->getData()->setStatus($status);
+
+//Update job status in storage
+$phq->update($job);

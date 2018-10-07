@@ -56,7 +56,7 @@ abstract class Job implements IJob
         $this->data->hydrate(json_decode($data, true));
     }
 
-    public function getData(): Dataset
+    public function getData(): JobDataset
     {
         return $this->data;
     }

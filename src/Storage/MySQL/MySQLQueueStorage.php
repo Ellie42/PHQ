@@ -14,6 +14,7 @@ use PHPUnit\Runner\Exception;
 use PHQ\Data\JobDataset;
 use PHQ\Exceptions\AssertionException;
 use PHQ\Exceptions\ConfigurationException;
+use PHQ\Exceptions\StorageException;
 use PHQ\Exceptions\StorageRetrievalException;
 use PHQ\Exceptions\StorageSetupException;
 use PHQ\Jobs\IJob;
@@ -216,5 +217,53 @@ class MySQLQueueStorage implements IQueueStorageHandler, IQueueStorageConfigurab
         }
 
         return new JobDataset($data);
+    }
+
+    /**
+     * Update job by ID
+     * @param JobDataset $jobDataset
+     * @return bool
+     * @throws StorageException
+     */
+    public function update(JobDataset $jobDataset): bool
+    {
+        $id = $jobDataset->getId();
+
+        if ($id === null) {
+            throw new StorageException("Cannot update a job without an id!");
+        }
+
+        $data = $jobDataset->toArray();
+
+        $data['payload'] = $jobDataset->getSerialisedPayload();
+
+        //Remove ID from the dataset so we don't accidentally overwrite the ID in the db
+        unset($data['id']);
+
+        $updateStrings = [];
+        $updateValues = [];
+
+        //Setup update string and values for all jobDataset properties
+        foreach ($data as $key => $value) {
+            $updateValues[] = $value;
+            $updateStrings[] = "$key = ?";
+        }
+
+        $updateString = implode(', ', $updateStrings);
+
+        $statement = $this->pdo->prepare("
+            UPDATE {$this->table} SET $updateString
+            WHERE id = ?
+        ");
+
+        $updateValues[] = $id;
+
+        try {
+            $result = $statement->execute($updateValues);
+        } catch (\PDOException $e) {
+            throw new StorageException("Failed to update jobdata for $id " . $this->pdo->errorInfo()[2]);
+        }
+
+        return $result;
     }
 }
