@@ -122,8 +122,23 @@ class PHQ
      * @param Job $job
      * @return bool
      */
-    public function update(Job $job) : bool
+    public function update(Job $job): bool
     {
         return $this->storageHandler->update($job->getData());
+    }
+
+    /**
+     * Grab the next job, run it and then update status
+     */
+    public function process()
+    {
+        $job = $this->getNext();
+
+        $status = $job->run();
+
+        //Set the new status on the job's dataset
+        $job->getData()->setStatus($status);
+
+        $this->update($job);
     }
 }
