@@ -78,10 +78,16 @@ class Dataset
      * Return an array of all data in the dataset
      * @return array
      */
-    public function toArray()
+    public function toArray() : array
     {
-        return array_filter(get_object_vars($this), function ($val) {
-            return $val !== null;
-        });
+        $data = [];
+
+        foreach(array_keys(get_object_vars($this)) as $key){
+            $getter = "get" . ucfirst($key);
+            $value = $this->$getter();
+            $data[$key] = $value;
+        }
+
+        return $data;
     }
 }
