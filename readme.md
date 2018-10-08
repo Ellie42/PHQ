@@ -4,6 +4,7 @@
 Job queue system written in PHP
 
 ## Getting Started
+See: [Basic Application Example](examples/basic/application.php)
 
 Firstly choose a storage medium for the queue data, and implement or use an existing class that implements `\PHQ\Storage\IQueueStorageHandler`.
 
@@ -29,7 +30,6 @@ This will be added as a setup script in composer in the future.
 ```php
     $phq->setup();
 ```
-
 
 ### Creating Jobs
 
@@ -100,7 +100,20 @@ Add jobs to the queue(managed by the chosen storage handler) by calling `enqueue
     $phq->enqueue(new MyJob());
 ``` 
 
-### Getting jobs from the queue
+## Running the workers
+See: [Worker Runner Example](examples/basic/workers.php)
+
+The actual worker process should be separate from the application configuring/adding the jobs,
+you can run the `$phq->start()` method to start processing jobs.
+
+```php
+$phq->start()
+
+```
+
+ 
+
+#### Getting jobs from the queue
 
 Retrieve the next job by calling `getNext()` on `PHQ\PHQ`
 
@@ -148,6 +161,23 @@ Example:
                     
                 ] 
             ]
+        ],
+        //Workers will run the jobs in their own processes
+        "workers" => [
+            
+            //Number of worker processes to spawn
+            "count"  => 2,
+            
+            //Optional - Specify a worker script to act as the worker process
+            "script" => "myWorker.php",
+            
+            //Optional - Language of worker script(if script does not have a file extension)
+            // or if overriding the file extension
+            "language" => "php",
+            
+            //Optional - Command to run for each worker, this is an explicit command
+            // which overrides script and language options
+            "command" => "php myWorker.php --work-hard-please"     
         ]
     ];
 ```
@@ -187,6 +217,3 @@ echo $data->getPropertyA();
 var_dump($data->toArray());
 ```
 
-### TODO
-
-* Add update method to storage handlers
