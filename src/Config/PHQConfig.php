@@ -120,8 +120,6 @@ class PHQConfig
 
         $baseConf = $this->rawConfig['workers'];
 
-        $count = isset($baseConf['count']) ? $baseConf['count'] : null;
-
-        return new WorkerConfig($count);
+        return new WorkerConfig($baseConf);
     }
 }

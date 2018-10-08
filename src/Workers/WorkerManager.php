@@ -10,6 +10,8 @@ namespace PHQ\Workers;
 
 
 use PHQ\Config\WorkerConfig;
+use PHQ\PHQ;
+use React\ChildProcess\Process;
 
 class WorkerManager
 {
@@ -23,9 +25,28 @@ class WorkerManager
      */
     private $workers;
 
-    public function __construct(WorkerConfig $config)
+    /**
+     * @var PHQ
+     */
+    private $phq;
+
+    /**
+     * WorkerManager constructor.
+     * @param WorkerConfig $config
+     * @param PHQ $phq
+     */
+    public function __construct(WorkerConfig $config, PHQ $phq)
     {
         $this->config = $config;
+        $this->phq = $phq;
+
+        $this->workers = new WorkerContainerArray();
+
+        for ($i = 0; $i < $this->config->count; $i++) {
+            $worker = new WorkerContainer(new Process($config->getScriptCommand()));
+
+            $this->workers[] = $worker;
+        }
     }
 
     /**
@@ -33,17 +54,21 @@ class WorkerManager
      */
     public function startWorking(): void
     {
-        $this->workers = new WorkerContainerArray();
-
-        for ($i = 0; $i < $this->config->workerCount; $i++) {
-            $worker = new WorkerContainer();
-
-            $this->workers[] = $worker;
-        }
+        $this->assignJobs();
     }
 
     public function getWorkerContainers(): WorkerContainerArray
     {
         return $this->workers;
+    }
+
+    /**
+     * Assign a job to all free workers
+     * TODO Implement
+     */
+    private function assignJobs()
+    {
+        foreach($this->workers as $worker){
+        }
     }
 }

@@ -105,7 +105,7 @@ class PHQConfigSpec extends ObjectBehavior
 
         $config = $this->getWorkerConfig()->shouldBeAnInstanceOf(WorkerConfig::class);
 
-        expect($config->workerCount)->shouldBe(2);
+        expect($config->count)->shouldBe(2);
     }
 
     function it_should_still_return_a_worker_config_if_no_configuration_entry_exists(){

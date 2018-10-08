@@ -63,6 +63,7 @@ class PHQSpec extends ObjectBehavior
         $this->beConstructedWith(null, $config);
         $config->getStorageConfig()->shouldBeCalled()->willReturn($storageConfig);
         $config->getWorkerConfig()->shouldBeCalled()->willReturn($workerConfig);
+        $workerConfig->getScriptCommand()->willReturn("");
 
         $storageConfig->getStorage()->shouldBeCalled()->willReturn($queueStorage);
 
@@ -90,6 +91,7 @@ class PHQSpec extends ObjectBehavior
         $config->getStorageConfig()->shouldBeCalled()->willReturn($storageConfig);
         $config->getWorkerConfig()->shouldBeCalled()->willReturn($workerConfig);
         $storageConfig->getStorage()->shouldBeCalled()->willReturn($queueStorage);
+        $workerConfig->getScriptCommand()->willReturn("");
         $queueStorage->setup(Argument::any())->shouldBeCalled();
 
         $this->shouldNotThrow(\Exception::class)->during('setup');

@@ -48,7 +48,7 @@ class PHQ
         }
 
         //Setup the worker manager
-        $this->workerManager = new WorkerManager($this->config->getWorkerConfig());
+        $this->workerManager = new WorkerManager($this->config->getWorkerConfig(), $this);
     }
 
     public function getStorageHandler(): IQueueStorageHandler
@@ -78,6 +78,7 @@ class PHQ
 
     /**
      * Returns an instance of IJob based on the class name in the JobDataset and sets the payload
+     * TODO find a better place for this
      * @param JobDataset $jobData
      * @return IJob
      * @throws \Exception
