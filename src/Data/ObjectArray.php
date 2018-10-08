@@ -9,6 +9,7 @@
 namespace PHQ\Data;
 
 
+use ArrayIterator;
 use PHQ\Exceptions\TypeError;
 
 /**
@@ -16,49 +17,13 @@ use PHQ\Exceptions\TypeError;
  * Class ObjectArray
  * @package PHQ\Data
  */
-class ObjectArray implements \ArrayAccess
+class ObjectArray extends ArrayIterator
 {
-    /**
-     * @var array
-     */
-    protected $objects = [];
-
     /**
      * The type(classname) to check against
      * @var null | string
      */
     protected $type = null;
-
-    /**
-     * Whether a offset exists
-     * @link https://php.net/manual/en/arrayaccess.offsetexists.php
-     * @param mixed $offset <p>
-     * An offset to check for.
-     * </p>
-     * @return boolean true on success or false on failure.
-     * </p>
-     * <p>
-     * The return value will be casted to boolean if non-boolean was returned.
-     * @since 5.0.0
-     */
-    public function offsetExists($offset)
-    {
-        return isset($this->objects[$offset]);
-    }
-
-    /**
-     * Offset to retrieve
-     * @link https://php.net/manual/en/arrayaccess.offsetget.php
-     * @param mixed $offset <p>
-     * The offset to retrieve.
-     * </p>
-     * @return mixed Can return all value types.
-     * @since 5.0.0
-     */
-    public function offsetGet($offset)
-    {
-        return $this->objects[$offset];
-    }
 
     /**
      * Offset to set
@@ -79,25 +44,11 @@ class ObjectArray implements \ArrayAccess
         if (!is_object($value)) {
             throw new TypeError("Value must be an object!");
             //If a class type is specified then apply strict checking
-        }else if ($this->type !== null && !($value instanceof $this->type)) {
+        } else if ($this->type !== null && !($value instanceof $this->type)) {
             $typeGiven = get_class($value);
             throw new TypeError("Object must be of type {$this->type}, type {$typeGiven} given");
         }
 
-        $this->objects[$offset] = $value;
-    }
-
-    /**
-     * Offset to unset
-     * @link https://php.net/manual/en/arrayaccess.offsetunset.php
-     * @param mixed $offset <p>
-     * The offset to unset.
-     * </p>
-     * @return void
-     * @since 5.0.0
-     */
-    public function offsetUnset($offset)
-    {
-        unset($this->objects[$offset]);
+        parent::offsetSet($offset, $value);
     }
 }
