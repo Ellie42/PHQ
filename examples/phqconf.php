@@ -14,4 +14,7 @@ return [
             ]
         ]
     ],
+    "workers" => [
+        "count" => 2
+    ]
 ];

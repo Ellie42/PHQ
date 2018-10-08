@@ -11,9 +11,15 @@ use PHQ\Jobs\Job;
 use PHQ\Storage\IQueueStorageConfigurable;
 use PHQ\Storage\IQueueStorageHandler;
 use PHQ\Storage\IQueueStorageNeedsSetup;
+use PHQ\Workers\WorkerManager;
 
 class PHQ
 {
+    /**
+     * @var WorkerManager
+     */
+    private $workerManager = null;
+
     /**
      * @var IQueueStorageHandler
      */
@@ -26,6 +32,7 @@ class PHQ
 
     public function __construct(IQueueStorageHandler $storageHandler = null, PHQConfig $config = null)
     {
+        //Setup the main configuration from phqconf
         if ($config === null) {
             $this->config = new PHQConfig(getcwd());
             $this->config->load();
@@ -33,11 +40,15 @@ class PHQ
             $this->config = $config;
         }
 
+        //Setup the storage handler
         if ($storageHandler === null) {
             $this->storageHandler = $this->createStorageHandler();
         } else {
             $this->storageHandler = $storageHandler;
         }
+
+        //Setup the worker manager
+        $this->workerManager = new WorkerManager($this->config->getWorkerConfig());
     }
 
     public function getStorageHandler(): IQueueStorageHandler
@@ -140,5 +151,10 @@ class PHQ
         $job->getData()->setStatus($status);
 
         $this->update($job);
+    }
+
+    public function start() : bool
+    {
+        return true;
     }
 }

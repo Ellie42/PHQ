@@ -18,4 +18,4 @@ $job = new MakeSomeFilesJob($payload);
 $phq->enqueue($job);
 
 //Retrieve the next job off the queue using the storage handler
-$phq->start();
+$phq->process();

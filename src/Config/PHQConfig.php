@@ -24,6 +24,12 @@ class PHQConfig
     protected $storageHandlerConfig;
 
     /**
+     * Containers the current worker configuration
+     * @var WorkerConfig
+     */
+    protected $workerConfig;
+
+    /**
      * Environment
      * @var string
      */
@@ -37,10 +43,12 @@ class PHQConfig
 
     public function __construct(
         string $rootPath,
-        StorageHandlerConfig $storageHandlerConfig = null
+        StorageHandlerConfig $storageHandlerConfig = null,
+        WorkerConfig $workerConfig = null
     )
     {
         $this->storageHandlerConfig = $storageHandlerConfig;
+        $this->workerConfig = $workerConfig;
         $this->rootPath = $rootPath;
     }
 
@@ -98,5 +106,22 @@ class PHQConfig
             $config['handler'],
             $options
         );
+    }
+
+    public function getWorkerConfig() : WorkerConfig
+    {
+        if($this->workerConfig !== null){
+            return $this->workerConfig;
+        }
+
+        if(!isset($this->rawConfig['workers'])){
+            return new WorkerConfig();
+        }
+
+        $baseConf = $this->rawConfig['workers'];
+
+        $count = isset($baseConf['count']) ? $baseConf['count'] : null;
+
+        return new WorkerConfig($count);
     }
 }

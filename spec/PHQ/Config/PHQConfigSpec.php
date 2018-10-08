@@ -8,6 +8,7 @@ use org\bovigo\vfs\vfsStreamFile;
 use PhpSpec\ObjectBehavior;
 use PHQ\Config\PHQConfig;
 use PHQ\Config\StorageHandlerConfig;
+use PHQ\Config\WorkerConfig;
 use spec\TestObjects\TestQueueStorage;
 
 class PHQConfigSpec extends ObjectBehavior
@@ -90,6 +91,33 @@ class PHQConfigSpec extends ObjectBehavior
         $this->setConfigData([]);
         $this->load();
         $this->getStorageConfig()->shouldBe(null);
+    }
+
+    function it_should_be_able_to_get_the_worker_configuration(){
+        $this->setConfigData([
+            "environment" => "test",
+            "workers" => [
+                "count" => 2
+            ]
+        ]);
+
+        $this->load();
+
+        $config = $this->getWorkerConfig()->shouldBeAnInstanceOf(WorkerConfig::class);
+
+        expect($config->workerCount)->shouldBe(2);
+    }
+
+    function it_should_still_return_a_worker_config_if_no_configuration_entry_exists(){
+        $this->setConfigData([]);
+        $this->load();
+
+        $this->getWorkerConfig()->shouldBeAnInstanceOf(WorkerConfig::class);
+    }
+
+    function it_should_use_an_existing_worker_config_if_it_has_been_set(WorkerConfig $config){
+        $this->beConstructedWith(vfsStream::url("config"), null, $config);
+        $this->getWorkerConfig()->shouldReturn($config);
     }
 
     private function setConfigData($data): void

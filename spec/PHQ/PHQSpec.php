@@ -5,6 +5,7 @@ namespace spec\PHQ;
 use PhpSpec\ObjectBehavior;
 use PHQ\Config\PHQConfig;
 use PHQ\Config\StorageHandlerConfig;
+use PHQ\Config\WorkerConfig;
 use PHQ\Data\JobDataset;
 use PHQ\Exceptions\ConfigurationException;
 use PHQ\Exceptions\PHQException;
@@ -52,15 +53,19 @@ class PHQSpec extends ObjectBehavior
         $this->getNext()->shouldBeAnInstanceOf(IJob::class);
     }
 
-    function it_should_use_the_storage_config_to_create_a_storage_handler_instance(
+    function it_should_use_the_config_to_initialise_all_configured_services(
         PHQConfig $config,
         StorageHandlerConfig $storageConfig,
-        TestQueueStorage $queueStorage
+        TestQueueStorage $queueStorage,
+        WorkerConfig $workerConfig
     )
     {
         $this->beConstructedWith(null, $config);
         $config->getStorageConfig()->shouldBeCalled()->willReturn($storageConfig);
+        $config->getWorkerConfig()->shouldBeCalled()->willReturn($workerConfig);
+
         $storageConfig->getStorage()->shouldBeCalled()->willReturn($queueStorage);
+
         $this->getStorageHandler()->shouldReturn($queueStorage);
     }
 
@@ -77,11 +82,13 @@ class PHQSpec extends ObjectBehavior
     function it_should_allow_you_to_perform_inital_setup_for_storage_handlers(
         PHQConfig $config,
         StorageHandlerConfig $storageConfig,
-        TestQueueStorage $queueStorage
+        TestQueueStorage $queueStorage,
+        WorkerConfig $workerConfig
     )
     {
         $this->beConstructedWith(null, $config);
         $config->getStorageConfig()->shouldBeCalled()->willReturn($storageConfig);
+        $config->getWorkerConfig()->shouldBeCalled()->willReturn($workerConfig);
         $storageConfig->getStorage()->shouldBeCalled()->willReturn($queueStorage);
         $queueStorage->setup(Argument::any())->shouldBeCalled();
 
@@ -133,6 +140,11 @@ class PHQSpec extends ObjectBehavior
         $this->storage->getNext()->shouldBeCalled()->willReturn($dataset);
         $this->storage->update($dataset)->shouldBeCalled();
         $this->process();
+    }
+
+    //TODO implement
+    function it_should_be_able_to_run_all_jobs_automatically_deferring_to_worker_processes(){
+        $this->start()->shouldReturn(true);
     }
 }
 
