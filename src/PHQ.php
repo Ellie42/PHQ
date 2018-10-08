@@ -30,7 +30,10 @@ class PHQ
      */
     private $config;
 
-    public function __construct(IQueueStorageHandler $storageHandler = null, PHQConfig $config = null)
+    public function __construct(
+        IQueueStorageHandler $storageHandler = null,
+        PHQConfig $config = null,
+        WorkerManager $workerManager = null)
     {
         //Setup the main configuration from phqconf
         if ($config === null) {
@@ -48,7 +51,11 @@ class PHQ
         }
 
         //Setup the worker manager
-        $this->workerManager = new WorkerManager($this->config->getWorkerConfig(), $this);
+        if($workerManager === null){
+            $this->workerManager = new WorkerManager($this->config->getWorkerConfig(), $this);
+        }else{
+            $this->workerManager = $workerManager;
+        }
     }
 
     public function getStorageHandler(): IQueueStorageHandler
@@ -154,8 +161,12 @@ class PHQ
         $this->update($job);
     }
 
-    public function start() : bool
+    /**
+     * Start processing jobs
+     * This is a blocking call that will continue forever or until an error is uncaught
+     */
+    public function start()
     {
-        return true;
+        $this->workerManager->startWorking();
     }
 }

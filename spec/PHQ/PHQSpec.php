@@ -12,6 +12,7 @@ use PHQ\Exceptions\PHQException;
 use PHQ\Jobs\IJob;
 use PHQ\Jobs\Job;
 use PHQ\PHQ;
+use PHQ\Workers\WorkerManager;
 use Prophecy\Argument;
 use spec\PHQ\Jobs\JobTest;
 use spec\TestObjects\TestJob;
@@ -144,9 +145,10 @@ class PHQSpec extends ObjectBehavior
         $this->process();
     }
 
-    //TODO implement
-    function it_should_be_able_to_run_all_jobs_automatically_deferring_to_worker_processes(){
-        $this->start()->shouldReturn(true);
+    function it_should_be_able_to_start_the_worker_processes(WorkerManager $workerManager){
+        $this->beConstructedWith($this->storage, null, $workerManager);
+        $workerManager->startWorking()->shouldBeCalled();
+        $this->start();
     }
 }
 
