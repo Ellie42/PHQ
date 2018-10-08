@@ -80,4 +80,12 @@ class WorkerConfigSpec extends ObjectBehavior
 
         $this->getScriptCommand()->shouldReturn("ts-node myscript.ts");
     }
+
+    function it_should_throw_an_error_if_specified_interpreter_is_not_handled(){
+        $this->beConstructedWith([
+            "language" => "notarealthinghopefully",
+        ]);
+
+        $this->shouldThrow(ConfigurationException::class)->during('getScriptCommand');
+    }
 }
