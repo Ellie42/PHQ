@@ -75,8 +75,10 @@ class ObjectArray implements \ArrayAccess
      */
     public function offsetSet($offset, $value)
     {
+        //Only accept object types
         if (!is_object($value)) {
             throw new TypeError("Value must be an object!");
+            //If a class type is specified then apply strict checking
         }else if ($this->type !== null && !($value instanceof $this->type)) {
             $typeGiven = get_class($value);
             throw new TypeError("Object must be of type {$this->type}, type {$typeGiven} given");
