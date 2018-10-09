@@ -112,4 +112,21 @@ class WorkerManager
 
         return call_user_func($this->workerContainerFactory,new Process($this->config->getScriptCommand()));
     }
+
+    /**
+     * Assign a job to a worker by id if possible
+     * @param int $id
+     */
+    public function assignJobById(int $id)
+    {
+        throw new \Exception("not implemented");
+    }
+
+    /**
+     * A new job has been added, assign the newest job to a worker if possible
+     */
+    public function assignNewJobs()
+    {
+        throw new \Exception("not implemented");
+    }
 }

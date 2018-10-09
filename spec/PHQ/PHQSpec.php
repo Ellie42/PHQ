@@ -3,13 +3,16 @@
 namespace spec\PHQ;
 
 use PhpSpec\ObjectBehavior;
+use PHQ\Config\EventBusConfig;
 use PHQ\Config\PHQConfig;
 use PHQ\Config\StorageHandlerConfig;
 use PHQ\Config\WorkerConfig;
 use PHQ\Data\JobDataset;
+use PHQ\EventBus\PeriodicEventBus;
 use PHQ\Exceptions\ConfigurationException;
 use PHQ\Exceptions\PHQException;
 use PHQ\Jobs\IJob;
+use PHQ\Jobs\IJobEventListener;
 use PHQ\Jobs\Job;
 use PHQ\PHQ;
 use PHQ\Workers\WorkerManager;
@@ -25,15 +28,22 @@ class PHQSpec extends ObjectBehavior
      */
     private $storage;
 
-    function let(TestQueueStorage $storage)
+    /**
+     * @var WorkerManager
+     */
+    private $workerManager;
+
+    function let(TestQueueStorage $storage, WorkerManager $workerManager)
     {
         $this->storage = $storage;
-        $this->beConstructedWith($storage);
+        $this->workerManager = $workerManager;
+        $this->beConstructedWith($this->storage, null, $workerManager);
     }
 
     function it_is_initializable()
     {
         $this->shouldHaveType(PHQ::class);
+        $this->shouldHaveType(IJobEventListener::class);
     }
 
     function it_should_allow_adding_of_jobs(TestJob $job)
@@ -58,17 +68,43 @@ class PHQSpec extends ObjectBehavior
         PHQConfig $config,
         StorageHandlerConfig $storageConfig,
         TestQueueStorage $queueStorage,
-        WorkerConfig $workerConfig
+        WorkerConfig $workerConfig,
+        EventBusConfigMock $eventBusConfig
     )
     {
         $this->beConstructedWith(null, $config);
         $config->getStorageConfig()->shouldBeCalled()->willReturn($storageConfig);
         $config->getWorkerConfig()->shouldBeCalled()->willReturn($workerConfig);
-        $workerConfig->getScriptCommand()->willReturn("");
+        $config->getEventBusConfig()->shouldBeCalled()->willReturn($eventBusConfig);
 
         $storageConfig->getStorage()->shouldBeCalled()->willReturn($queueStorage);
+        $eventBusConfig->getClass()->shouldBeCalled()->willReturn(PeriodicEventBus::class);
+        $eventBusConfig->getOptions()->shouldBeCalled()->willReturn([]);
 
         $this->getStorageHandler()->shouldReturn($queueStorage);
+    }
+
+    function it_should_allow_you_to_perform_inital_setup_for_storage_handlers(
+        PHQConfig $config,
+        StorageHandlerConfig $storageConfig,
+        TestQueueStorage $queueStorage,
+        WorkerConfig $workerConfig,
+        EventBusConfigMock $eventBusConfig
+    )
+    {
+        $this->beConstructedWith(null, $config);
+        $config->getStorageConfig()->shouldBeCalled()->willReturn($storageConfig);
+        $config->getWorkerConfig()->shouldBeCalled()->willReturn($workerConfig);
+        $config->getEventBusConfig()->shouldBeCalled()->willReturn($eventBusConfig);
+
+        $workerConfig->getScriptCommand()->willReturn("");
+        $storageConfig->getStorage()->shouldBeCalled()->willReturn($queueStorage);
+        $eventBusConfig->getClass()->shouldBeCalled()->willReturn(PeriodicEventBus::class);
+        $eventBusConfig->getOptions()->shouldBeCalled()->willReturn([]);
+
+        $queueStorage->setup(Argument::any())->shouldBeCalled();
+
+        $this->shouldNotThrow(\Exception::class)->during('setup');
     }
 
     function it_should_throw_an_error_if_no_storage_has_been_configured_or_set(
@@ -78,24 +114,6 @@ class PHQSpec extends ObjectBehavior
         $this->beConstructedWith(null, $config);
         $config->getStorageConfig()->shouldBeCalled()->willReturn(null);
         $this->shouldThrow(ConfigurationException::class)->duringInstantiation();
-    }
-
-
-    function it_should_allow_you_to_perform_inital_setup_for_storage_handlers(
-        PHQConfig $config,
-        StorageHandlerConfig $storageConfig,
-        TestQueueStorage $queueStorage,
-        WorkerConfig $workerConfig
-    )
-    {
-        $this->beConstructedWith(null, $config);
-        $config->getStorageConfig()->shouldBeCalled()->willReturn($storageConfig);
-        $config->getWorkerConfig()->shouldBeCalled()->willReturn($workerConfig);
-        $storageConfig->getStorage()->shouldBeCalled()->willReturn($queueStorage);
-        $workerConfig->getScriptCommand()->willReturn("");
-        $queueStorage->setup(Argument::any())->shouldBeCalled();
-
-        $this->shouldNotThrow(\Exception::class)->during('setup');
     }
 
     function it_should_throw_error_if_job_class_does_not_exist_when_creating()
@@ -123,7 +141,8 @@ class PHQSpec extends ObjectBehavior
         ]))->shouldBeAnInstanceOf(TestJob::class);
     }
 
-    function it_should_be_able_to_update_a_job_status(){
+    function it_should_be_able_to_update_a_job_status()
+    {
         $jobData = new JobDataset([
             "id" => 1,
         ]);
@@ -135,7 +154,8 @@ class PHQSpec extends ObjectBehavior
         $this->update($job)->shouldReturn(true);
     }
 
-    function it_should_run_the_next_job_and_update_status_when_complete(Job $job){
+    function it_should_run_the_next_job_and_update_status_when_complete(Job $job)
+    {
         $dataset = new JobDataset([
             "class" => TestJob::class
         ]);
@@ -145,14 +165,43 @@ class PHQSpec extends ObjectBehavior
         $this->process();
     }
 
-    function it_should_be_able_to_start_the_worker_processes(WorkerManager $workerManager){
-        $this->beConstructedWith($this->storage, null, $workerManager);
-        $workerManager->startWorking()->shouldBeCalled();
+    function it_should_be_able_to_start_the_worker_processes()
+    {
+        $this->workerManager->startWorking()->shouldBeCalled();
         $this->start();
+    }
+
+    function it_should_notify_worker_manager_of_new_jobs_added_with_id()
+    {
+        $this->workerManager->assignJobById(10)->shouldBeCalled();
+        $this->onJobAdded(10);
+    }
+
+    function it_should_notify_worker_manager_of_new_jobs_without_id()
+    {
+        $this->workerManager->assignNewJobs()->shouldBeCalled();
+        $this->onJobAdded();
+    }
+
+    function it_should_notify_worker_manager_when_a_full_job_list_update_is_requested(){
+        $this->workerManager->assignNewJobs()->shouldBeCalled();
+        $this->updateJobs();
     }
 }
 
 class JobNotGoodEnough
 {
 
+}
+
+class EventBusConfigMock extends EventBusConfig
+{
+    public function getClass()
+    {
+    }
+
+    public function getOptions()
+    {
+        
+    }
 }

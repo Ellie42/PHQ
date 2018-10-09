@@ -20,9 +20,15 @@ class WorkerContainer implements IWorkerProcessHandler
      */
     private $process;
 
-    public function __construct(Process $process)
+    /**
+     * @var IWorkerCommunicator
+     */
+    private $communicator;
+
+    public function __construct(Process $process, IWorkerCommunicator $communicator)
     {
         $this->process = $process;
+        $this->communicator = $communicator;
     }
 
     /**
@@ -36,6 +42,10 @@ class WorkerContainer implements IWorkerProcessHandler
         }
     }
 
+    /**
+     * Start the actual worker process and link up all required events
+     * @param LoopInterface $loop
+     */
     private function startProcess(LoopInterface $loop): void
     {
         $this->process->start($loop);
@@ -47,16 +57,13 @@ class WorkerContainer implements IWorkerProcessHandler
 
     public function onError(\Exception $e)
     {
-        var_dump($e);
     }
 
     public function onExit($code, $signal)
     {
-        var_dump("Worker process closed :(");
     }
 
     public function onData($chunk)
     {
-        var_dump($chunk);
     }
 }

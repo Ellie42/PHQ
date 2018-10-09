@@ -4,16 +4,18 @@ namespace PHQ;
 
 use PHQ\Config\PHQConfig;
 use PHQ\Data\JobDataset;
+use PHQ\EventBus\PeriodicEventBus;
+use PHQ\EventBus\IJobEventBus;
 use PHQ\Exceptions\ConfigurationException;
 use PHQ\Exceptions\PHQException;
 use PHQ\Jobs\IJob;
+use PHQ\Jobs\IJobEventListener;
 use PHQ\Jobs\Job;
-use PHQ\Storage\IQueueStorageConfigurable;
 use PHQ\Storage\IQueueStorageHandler;
 use PHQ\Storage\IQueueStorageNeedsSetup;
 use PHQ\Workers\WorkerManager;
 
-class PHQ
+class PHQ implements IJobEventListener
 {
     /**
      * @var WorkerManager
@@ -30,10 +32,17 @@ class PHQ
      */
     private $config;
 
+    /**
+     * @var IJobEventBus
+     */
+    private $jobEventBus;
+
     public function __construct(
         IQueueStorageHandler $storageHandler = null,
         PHQConfig $config = null,
-        WorkerManager $workerManager = null)
+        WorkerManager $workerManager = null,
+        IJobEventBus $jobEventBus = null
+    )
     {
         //Setup the main configuration from phqconf
         if ($config === null) {
@@ -56,6 +65,8 @@ class PHQ
         }else{
             $this->workerManager = $workerManager;
         }
+
+        $this->setupEventBus($jobEventBus);
     }
 
     public function getStorageHandler(): IQueueStorageHandler
@@ -85,7 +96,6 @@ class PHQ
 
     /**
      * Returns an instance of IJob based on the class name in the JobDataset and sets the payload
-     * TODO find a better place for this
      * @param JobDataset $jobData
      * @return IJob
      * @throws \Exception
@@ -168,5 +178,50 @@ class PHQ
     public function start()
     {
         $this->workerManager->startWorking();
+    }
+
+    /**
+     * Assign the new job to a worker
+     * @param int|null $id
+     */
+    public function onJobAdded(?int $id = null)
+    {
+        if($id === null){
+            $this->workerManager->assignNewJobs();
+        }else{
+            $this->workerManager->assignJobById($id);
+        }
+    }
+
+    /**
+     * Configure and assign the event bus
+     * @param IJobEventBus $jobEventBus
+     * @throws ConfigurationException
+     */
+    private function setupEventBus(?IJobEventBus $jobEventBus): void
+    {
+        //Setup the event receiver which should handle new job add/update events and trigger the worker manager
+        //to assign new jobs
+        if ($jobEventBus === null) {
+            $eventBusConfig = $this->config->getEventBusConfig();
+            $eventBusClass = $eventBusConfig->getClass();
+
+            if(!is_subclass_of($eventBusClass, IJobEventBus::class)){
+                throw new ConfigurationException("Specified event bus $eventBusClass does not implement " . IJobEventBus::class);
+            }
+
+            $this->jobEventBus = new $eventBusClass($this, $this->config->getEventBusConfig());
+        } else {
+            $this->jobEventBus = $jobEventBus;
+        }
+    }
+
+    /**
+     * Force update of jobs
+     * @return mixed
+     */
+    public function updateJobs()
+    {
+        $this->workerManager->assignNewJobs();
     }
 }

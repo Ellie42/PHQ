@@ -54,6 +54,11 @@ class WorkerConfig extends Dataset
         return "{$interpreter} {$this->script}";
     }
 
+    /**
+     * Return the interpreter command from a language name or shorthand
+     * @param $language
+     * @return mixed|null
+     */
     private function getInterpreterByLanguage($language)
     {
         foreach ($this->interpreters as $test => $command) {

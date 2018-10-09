@@ -24,10 +24,16 @@ class PHQConfig
     protected $storageHandlerConfig;
 
     /**
-     * Containers the current worker configuration
+     * Contains the current worker configuration
      * @var WorkerConfig
      */
     protected $workerConfig;
+
+    /**
+     * Contains the event bus configuration
+     * @var EventBusConfig
+     */
+    protected $eventBusConfig;
 
     /**
      * Environment
@@ -121,5 +127,23 @@ class PHQConfig
         $baseConf = $this->rawConfig['workers'];
 
         return new WorkerConfig($baseConf);
+    }
+
+    /**
+     * Returns the event bus configuration
+     */
+    public function getEventBusConfig()
+    {
+        if($this->workerConfig !== null){
+            return $this->workerConfig;
+        }
+
+        if(!isset($this->rawConfig['eventbus'])){
+            return new EventBusConfig();
+        }
+
+        $baseConf = $this->rawConfig['eventbus'];
+
+        return new EventBusConfig($baseConf);
     }
 }

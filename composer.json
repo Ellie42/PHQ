@@ -25,6 +25,8 @@
     }
   ],
   "require": {
-    "react/child-process": "^0.5.2"
+    "react/child-process": "^0.5.2",
+    "react/event-loop": "^1.0",
+    "react/http": "^0.8.3"
   }
 }

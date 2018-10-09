@@ -162,6 +162,7 @@ Example:
                 ] 
             ]
         ],
+        
         //Workers will run the jobs in their own processes
         "workers" => [
             
@@ -178,8 +179,36 @@ Example:
             //Optional - Command to run for each worker, this is an explicit command
             // which overrides script and language options
             "command" => "php myWorker.php --work-hard-please"     
+        ],
+        
+        //EventBus is the class that is responsible for receiving update events from the application
+        //and forwarding them to the workermanager.
+        //By default the EventBus is a PeriodicJobEventBus which will attempt to update the jobs every n seconds
+        //By specifying another EventBus you can send status updates using many different methods.
+        //e.g. HTTPJobEventBus - Start a HTTP server and connect to it from the application to send updates
+        //Optional
+        "eventbus" => [
+            //Optional - Classname of the required EventBus
+            "class" => \PHQ\EventBus\PeriodicEventBus::class,
+            "options" => [
+                //Implementation specific EventBus options go here
+                //e.g. "interval" => 10 //for periodic event bus update interval
+            ]   
         ]
     ];
+```
+
+## EventBus List
+### PeriodicEventBus
+Requests a job list update periodically.
+
+Available options:
+
+```php
+[
+    //Update time in seconds
+    "interval" => 5
+]
 ```
 
 ### Datasets

@@ -2,13 +2,12 @@
 
 namespace spec\PHQ\Workers;
 
+use PHQ\Workers\IWorkerCommunicator;
 use PHQ\Workers\WorkerContainer;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 use React\ChildProcess\Process;
 use React\EventLoop\LoopInterface;
-use React\EventLoop\TimerInterface;
-use React\Stream\ReadableResourceStream;
 use React\Stream\ReadableStreamInterface;
 
 class WorkerContainerSpec extends ObjectBehavior
@@ -18,11 +17,11 @@ class WorkerContainerSpec extends ObjectBehavior
      */
     private $process;
 
-    function let(Process $process)
+    function let(Process $process, IWorkerCommunicator $communicator)
     {
         $this->process = $process;
 
-        $this->beConstructedWith($process);
+        $this->beConstructedWith($process, $communicator);
     }
 
     function it_is_initializable()
