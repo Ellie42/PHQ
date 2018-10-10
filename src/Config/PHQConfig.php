@@ -48,14 +48,25 @@ class PHQConfig
     private $rootPath;
 
     public function __construct(
-        string $rootPath,
-        StorageHandlerConfig $storageHandlerConfig = null,
-        WorkerConfig $workerConfig = null
+        string $rootPath
     )
     {
-        $this->storageHandlerConfig = $storageHandlerConfig;
-        $this->workerConfig = $workerConfig;
         $this->rootPath = $rootPath;
+    }
+
+    public function setWorkerConfig(WorkerConfig $workerConfig)
+    {
+        $this->workerConfig = $workerConfig;
+    }
+
+    public function setEventBusConfig(EventBusConfig $eventBusConfig)
+    {
+        $this->eventBusConfig = $eventBusConfig;
+    }
+
+    public function setStorageHandlerConfig(StorageHandlerConfig $storageHandlerConfig)
+    {
+        $this->storageHandlerConfig = $storageHandlerConfig;
     }
 
     /**
@@ -114,13 +125,13 @@ class PHQConfig
         );
     }
 
-    public function getWorkerConfig() : WorkerConfig
+    public function getWorkerConfig(): WorkerConfig
     {
-        if($this->workerConfig !== null){
+        if ($this->workerConfig !== null) {
             return $this->workerConfig;
         }
 
-        if(!isset($this->rawConfig['workers'])){
+        if (!isset($this->rawConfig['workers'])) {
             return new WorkerConfig();
         }
 
@@ -134,11 +145,11 @@ class PHQConfig
      */
     public function getEventBusConfig()
     {
-        if($this->eventBusConfig !== null){
+        if ($this->eventBusConfig !== null) {
             return $this->eventBusConfig;
         }
 
-        if(!isset($this->rawConfig['eventbus'])){
+        if (!isset($this->rawConfig['eventbus'])) {
             return new EventBusConfig();
         }
 

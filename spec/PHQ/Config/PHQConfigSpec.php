@@ -6,6 +6,7 @@ use org\bovigo\vfs\vfsStream;
 use org\bovigo\vfs\vfsStreamDirectory;
 use org\bovigo\vfs\vfsStreamFile;
 use PhpSpec\ObjectBehavior;
+use PHQ\Config\EventBusConfig;
 use PHQ\Config\PHQConfig;
 use PHQ\Config\StorageHandlerConfig;
 use PHQ\Config\WorkerConfig;
@@ -80,7 +81,7 @@ class PHQConfigSpec extends ObjectBehavior
     function it_should_use_existing_storage_config_if_already_created()
     {
         $config = new StorageHandlerConfig("abc", []);
-        $this->beConstructedWith(vfsStream::url("config"), $config);
+        $this->setStorageHandlerConfig($config);
 
         $this->load();
         $this->getStorageConfig()->shouldBe($config);
@@ -116,8 +117,13 @@ class PHQConfigSpec extends ObjectBehavior
     }
 
     function it_should_use_an_existing_worker_config_if_it_has_been_set(WorkerConfig $config){
-        $this->beConstructedWith(vfsStream::url("config"), null, $config);
+        $this->setWorkerConfig($config);
         $this->getWorkerConfig()->shouldReturn($config);
+    }
+
+    function it_should_use_an_existing_event_bus_config_if_it_has_been_set(EventBusConfig $config){
+        $this->setEventBusConfig($config);
+        $this->getEventBusConfig()->shouldReturn($config);
     }
 
     private function setConfigData($data): void

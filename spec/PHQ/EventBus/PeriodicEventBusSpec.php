@@ -44,4 +44,10 @@ class PeriodicEventBusSpec extends ObjectBehavior
             ->shouldBeCalled();
         $this->start($loop);
     }
+
+    function it_should_be_able_to_trigger_updates(){
+        $this->config->getOptions()->shouldBeCalled()->willReturn([]);
+        $this->eventListener->updateJobs()->shouldBeCalled();
+        $this->triggerUpdate();
+    }
 }

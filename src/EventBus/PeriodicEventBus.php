@@ -39,8 +39,14 @@ class PeriodicEventBus implements IJobEventBus
      */
     function start(LoopInterface $loop)
     {
-        $loop->addPeriodicTimer($this->options->getInterval(), function () {
-            $this->eventListener->updateJobs();
-        });
+        $loop->addPeriodicTimer($this->options->getInterval(), \Closure::fromCallable([$this, 'triggerUpdate']));
+    }
+
+    /**
+     * Called periodically and will request job assignments
+     */
+    public function triggerUpdate()
+    {
+        $this->eventListener->updateJobs();
     }
 }
