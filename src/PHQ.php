@@ -44,6 +44,17 @@ class PHQ implements IJobEventListener
      */
     private $eventLoop;
 
+    /**
+     * This constructor has gotten ridiculous,
+     * TODO replace with either setters for each param or implement builder pattern
+     * PHQ constructor.
+     * @param IQueueStorageHandler|null $storageHandler
+     * @param PHQConfig|null $config
+     * @param WorkerManager|null $workerManager
+     * @param IJobEventBus|null $jobEventBus
+     * @param LoopInterface|null $loop
+     * @throws ConfigurationException
+     */
     public function __construct(
         IQueueStorageHandler $storageHandler = null,
         PHQConfig $config = null,
