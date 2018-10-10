@@ -14,6 +14,8 @@ use PHQ\Jobs\Job;
 use PHQ\Storage\IQueueStorageHandler;
 use PHQ\Storage\IQueueStorageNeedsSetup;
 use PHQ\Workers\WorkerManager;
+use React\EventLoop\Factory;
+use React\EventLoop\LoopInterface;
 
 class PHQ implements IJobEventListener
 {
@@ -37,13 +39,25 @@ class PHQ implements IJobEventListener
      */
     private $jobEventBus;
 
+    /**
+     * @var LoopInterface
+     */
+    private $eventLoop;
+
     public function __construct(
         IQueueStorageHandler $storageHandler = null,
         PHQConfig $config = null,
         WorkerManager $workerManager = null,
-        IJobEventBus $jobEventBus = null
+        IJobEventBus $jobEventBus = null,
+        LoopInterface $loop = null
     )
     {
+        if($loop === null){
+            $this->eventLoop = Factory::create();
+        }else{
+            $this->eventLoop = $loop;
+        }
+
         //Setup the main configuration from phqconf
         if ($config === null) {
             $this->config = new PHQConfig(getcwd());
@@ -60,9 +74,9 @@ class PHQ implements IJobEventListener
         }
 
         //Setup the worker manager
-        if($workerManager === null){
+        if ($workerManager === null) {
             $this->workerManager = new WorkerManager($this->config->getWorkerConfig(), $this);
-        }else{
+        } else {
             $this->workerManager = $workerManager;
         }
 
@@ -177,7 +191,8 @@ class PHQ implements IJobEventListener
      */
     public function start()
     {
-        $this->workerManager->startWorking();
+        $this->jobEventBus->start($this->eventLoop);
+        $this->workerManager->startWorking($this->eventLoop);
     }
 
     /**
@@ -186,9 +201,9 @@ class PHQ implements IJobEventListener
      */
     public function onJobAdded(?int $id = null)
     {
-        if($id === null){
+        if ($id === null) {
             $this->workerManager->assignNewJobs();
-        }else{
+        } else {
             $this->workerManager->assignJobById($id);
         }
     }
@@ -206,7 +221,7 @@ class PHQ implements IJobEventListener
             $eventBusConfig = $this->config->getEventBusConfig();
             $eventBusClass = $eventBusConfig->getClass();
 
-            if(!is_subclass_of($eventBusClass, IJobEventBus::class)){
+            if (!is_subclass_of($eventBusClass, IJobEventBus::class)) {
                 throw new ConfigurationException("Specified event bus $eventBusClass does not implement " . IJobEventBus::class);
             }
 

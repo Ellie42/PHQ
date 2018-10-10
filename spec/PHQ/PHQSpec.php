@@ -17,6 +17,7 @@ use PHQ\Jobs\Job;
 use PHQ\PHQ;
 use PHQ\Workers\WorkerManager;
 use Prophecy\Argument;
+use React\EventLoop\LoopInterface;
 use spec\PHQ\Jobs\JobTest;
 use spec\TestObjects\TestJob;
 use spec\TestObjects\TestQueueStorage;
@@ -165,9 +166,10 @@ class PHQSpec extends ObjectBehavior
         $this->process();
     }
 
-    function it_should_be_able_to_start_the_worker_processes()
+    function it_should_be_able_to_start_the_worker_processes(LoopInterface $loop)
     {
-        $this->workerManager->startWorking()->shouldBeCalled();
+        $this->beConstructedWith($this->storage, null, $this->workerManager,null, $loop);
+        $this->workerManager->startWorking($loop)->shouldBeCalled();
         $this->start();
     }
 

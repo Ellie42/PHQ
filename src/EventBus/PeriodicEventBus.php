@@ -12,7 +12,6 @@ namespace PHQ\EventBus;
 use PHQ\Config\EventBusConfig;
 use PHQ\Config\Options\PeriodicEventBusOptions;
 use PHQ\Jobs\IJobEventListener;
-use PHQ\Workers\WorkerManager;
 use React\EventLoop\LoopInterface;
 
 class PeriodicEventBus implements IJobEventBus

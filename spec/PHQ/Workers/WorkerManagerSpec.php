@@ -9,6 +9,7 @@ use PHQ\Workers\WorkerContainer;
 use PHQ\Workers\WorkerContainerArray;
 use PHQ\Workers\WorkerManager;
 use PhpSpec\ObjectBehavior;
+use Prophecy\Argument;
 use React\ChildProcess\Process;
 use React\EventLoop\LoopInterface;
 
@@ -28,7 +29,7 @@ class WorkerManagerSpec extends ObjectBehavior
         $this->config = $workerConfig;
         $this->loop = $loop;
         $this->config->getScriptCommand()->willReturn("");
-        $this->beConstructedWith($workerConfig, $phq,$loop);
+        $this->beConstructedWith($workerConfig, $phq);
     }
 
     function it_is_initializable()
@@ -57,7 +58,8 @@ class WorkerManagerSpec extends ObjectBehavior
             return $container->getWrappedObject();
         });
 
+        $this->loop->addPeriodicTimer(Argument::any(), Argument::type(\Closure::class))->shouldBeCalled();
         $this->loop->run()->shouldBeCalled();
-        $this->startWorking();
+        $this->startWorking($this->loop);
     }
 }

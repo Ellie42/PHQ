@@ -9,7 +9,7 @@
 namespace PHQ\Workers;
 
 
-class WorkerCommunicationAdapter
+class WorkerCommunicationAdapter implements IWorkerCommunicator
 {
 
 }

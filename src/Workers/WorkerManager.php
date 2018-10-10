@@ -33,31 +33,37 @@ class WorkerManager
     private $phq;
 
     /**
-     * @var LoopInterface
-     */
-    private $loop;
-
-    /**
      * @var \Closure
      */
     private $workerContainerFactory;
 
     /**
+     * @var IWorkerCommunicator
+     */
+    private $communicator;
+
+    /**
      * WorkerManager constructor.
      * @param WorkerConfig $config
      * @param PHQ $phq
-     * @param LoopInterface|null $loop
+     * @param IWorkerCommunicator|null $communicator
      */
-    public function __construct(WorkerConfig $config, PHQ $phq, LoopInterface $loop = null)
+    public function __construct(
+        WorkerConfig $config,
+        PHQ $phq,
+        IWorkerCommunicator $communicator = null
+    )
     {
         $this->config = $config;
         $this->phq = $phq;
 
-        if ($loop === null) {
-            $loop = Factory::create();
-        }
+        $this->workers = new WorkerContainerArray();
 
-        $this->loop = $loop;
+        if($communicator === null){
+            $this->communicator = new WorkerCommunicationAdapter();
+        }else{
+            $this->communicator = $communicator;
+        }
     }
 
     /**
@@ -79,8 +85,10 @@ class WorkerManager
 
     /**
      * Instantiate all worker containers and start sending jobs if possible
+     * @param LoopInterface $loop
+     * @throws \PHQ\Exceptions\ConfigurationException
      */
-    public function startWorking(): void
+    public function startWorking(LoopInterface $loop): void
     {
         $this->workers = new WorkerContainerArray();
 
@@ -89,10 +97,12 @@ class WorkerManager
 
             $this->workers[] = $worker;
 
-            $worker->start($this->loop);
+            $worker->start($loop);
         }
 
-        $this->loop->run();
+        $loop->addPeriodicTimer(0, function(){});
+
+        $loop->run();
     }
 
     public function getWorkerContainers(): WorkerContainerArray
@@ -107,10 +117,10 @@ class WorkerManager
     private function createWorkerContainerInstance(): WorkerContainer
     {
         if ($this->workerContainerFactory === null) {
-            return new WorkerContainer(new Process($this->config->getScriptCommand()));
+            return new WorkerContainer(new Process($this->config->getScriptCommand()), $this->communicator);
         }
 
-        return call_user_func($this->workerContainerFactory,new Process($this->config->getScriptCommand()));
+        return call_user_func($this->workerContainerFactory, new Process($this->config->getScriptCommand()));
     }
 
     /**
