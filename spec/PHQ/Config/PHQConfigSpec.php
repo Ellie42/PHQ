@@ -10,6 +10,7 @@ use PHQ\Config\EventBusConfig;
 use PHQ\Config\PHQConfig;
 use PHQ\Config\StorageHandlerConfig;
 use PHQ\Config\WorkerConfig;
+use PHQ\EventBus\PeriodicEventBus;
 use spec\TestObjects\TestQueueStorage;
 
 class PHQConfigSpec extends ObjectBehavior
@@ -124,6 +125,21 @@ class PHQConfigSpec extends ObjectBehavior
     function it_should_use_an_existing_event_bus_config_if_it_has_been_set(EventBusConfig $config){
         $this->setEventBusConfig($config);
         $this->getEventBusConfig()->shouldReturn($config);
+    }
+
+    function it_should_be_able_to_get_the_event_bus_configuration(){
+        $this->setConfigData([
+            "eventbus" => [
+                "class" => PeriodicEventBus::class,
+                "options" => [
+                    "interval" => 1,
+                ]
+            ]
+        ]);
+
+        $this->load();
+
+        $this->getEventBusConfig()->shouldBeAnInstanceOf(EventBusConfig::class);
     }
 
     private function setConfigData($data): void
