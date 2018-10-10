@@ -134,8 +134,8 @@ class PHQConfig
      */
     public function getEventBusConfig()
     {
-        if($this->workerConfig !== null){
-            return $this->workerConfig;
+        if($this->eventBusConfig !== null){
+            return $this->eventBusConfig;
         }
 
         if(!isset($this->rawConfig['eventbus'])){
