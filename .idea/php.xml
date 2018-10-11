@@ -49,16 +49,6 @@
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="7.2" />
-  <component name="PhpStepFilterConfiguration">
-    <skipped_functions>
-      <skipped_function name="spec\PHQ\Data\TestDataset-&gt;PHQ\Data\{closure}" />
-    </skipped_functions>
-    <option name="skippedFunctions">
-      <list>
-        <option value="spec\PHQ\Data\TestDataset-&gt;PHQ\Data\{closure}" />
-      </list>
-    </option>
-  </component>
   <component name="PhpUnit">
     <phpunit_settings>
       <PhpUnitSettings load_method="CUSTOM_LOADER" custom_loader_path="$PROJECT_DIR$/vendor/autoload.php" />

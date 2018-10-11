@@ -13,14 +13,14 @@ use PHQ\Jobs\IJobEventListener;
 use PHQ\Jobs\Job;
 use PHQ\Storage\IQueueStorageHandler;
 use PHQ\Storage\IQueueStorageNeedsSetup;
-use PHQ\Workers\WorkerManager;
+use PHQ\Workers\QueueManager;
 use React\EventLoop\Factory;
 use React\EventLoop\LoopInterface;
 
 class PHQ implements IJobEventListener
 {
     /**
-     * @var WorkerManager
+     * @var QueueManager
      */
     private $workerManager = null;
 
@@ -50,7 +50,7 @@ class PHQ implements IJobEventListener
      * PHQ constructor.
      * @param IQueueStorageHandler|null $storageHandler
      * @param PHQConfig|null $config
-     * @param WorkerManager|null $workerManager
+     * @param QueueManager|null $workerManager
      * @param IJobEventBus|null $jobEventBus
      * @param LoopInterface|null $loop
      * @throws ConfigurationException
@@ -58,7 +58,7 @@ class PHQ implements IJobEventListener
     public function __construct(
         IQueueStorageHandler $storageHandler = null,
         PHQConfig $config = null,
-        WorkerManager $workerManager = null,
+        QueueManager $workerManager = null,
         IJobEventBus $jobEventBus = null,
         LoopInterface $loop = null
     )
@@ -86,7 +86,7 @@ class PHQ implements IJobEventListener
 
         //Setup the worker manager
         if ($workerManager === null) {
-            $this->workerManager = new WorkerManager($this->config->getWorkerConfig(), $this);
+            $this->workerManager = new QueueManager($this->config->getWorkerConfig(), $this);
         } else {
             $this->workerManager = $workerManager;
         }
@@ -207,16 +207,12 @@ class PHQ implements IJobEventListener
     }
 
     /**
-     * Assign the new job to a worker
+     * Assign all new jobs when a job is added
      * @param int|null $id
      */
     public function onJobAdded(?int $id = null)
     {
-        if ($id === null) {
-            $this->workerManager->assignNewJobs();
-        } else {
-            $this->workerManager->assignJobById($id);
-        }
+        $this->workerManager->assignNewJobs();
     }
 
     /**

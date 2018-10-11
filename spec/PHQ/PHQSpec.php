@@ -16,7 +16,7 @@ use PHQ\Jobs\IJob;
 use PHQ\Jobs\IJobEventListener;
 use PHQ\Jobs\Job;
 use PHQ\PHQ;
-use PHQ\Workers\WorkerManager;
+use PHQ\Workers\QueueManager;
 use Prophecy\Argument;
 use React\EventLoop\LoopInterface;
 use spec\PHQ\Jobs\JobTest;
@@ -31,11 +31,11 @@ class PHQSpec extends ObjectBehavior
     private $storage;
 
     /**
-     * @var WorkerManager
+     * @var QueueManager
      */
     private $workerManager;
 
-    function let(TestQueueStorage $storage, WorkerManager $workerManager)
+    function let(TestQueueStorage $storage, QueueManager $workerManager)
     {
         $this->storage = $storage;
         $this->workerManager = $workerManager;
@@ -174,11 +174,11 @@ class PHQSpec extends ObjectBehavior
         $this->start();
     }
 
-    function it_should_notify_worker_manager_of_new_jobs_added_with_id()
-    {
-        $this->workerManager->assignJobById(10)->shouldBeCalled();
-        $this->onJobAdded(10);
-    }
+//    function it_should_notify_worker_manager_of_new_jobs_added_with_id()
+//    {
+//        $this->workerManager->assignJobById(10)->shouldBeCalled();
+//        $this->onJobAdded(10);
+//    }
 
     function it_should_notify_worker_manager_of_new_jobs_without_id()
     {
@@ -192,7 +192,7 @@ class PHQSpec extends ObjectBehavior
         $this->updateJobs();
     }
 
-    function it_should_fail_to_set_the_event_bus_if_it_isnt_valid(PHQConfig $config, EventBusConfigMock $eventBusConfig, WorkerManager $workerManager)
+    function it_should_fail_to_set_the_event_bus_if_it_isnt_valid(PHQConfig $config, EventBusConfigMock $eventBusConfig, QueueManager $workerManager)
     {
         $this->beConstructedWith($this->storage, $config, $workerManager);
         $config->getEventBusConfig()->shouldBeCalled()->willReturn($eventBusConfig);
@@ -200,7 +200,7 @@ class PHQSpec extends ObjectBehavior
         $this->shouldThrow(ConfigurationException::class)->duringInstantiation();
     }
 
-    function it_should_use_the_existing_event_bus_if_provided(PHQConfig $config, IJobEventBus $eventBus, WorkerManager $workerManager){
+    function it_should_use_the_existing_event_bus_if_provided(PHQConfig $config, IJobEventBus $eventBus, QueueManager $workerManager){
         $this->beConstructedWith($this->storage, $config, $workerManager,$eventBus);
         $this->getEventBus()->shouldBe($eventBus);
     }

@@ -9,6 +9,7 @@
 namespace PHQ\Workers;
 
 
+use PHQ\Data\JobDataset;
 use React\ChildProcess\Process;
 use React\EventLoop\Factory;
 use React\EventLoop\LoopInterface;
@@ -25,21 +26,31 @@ class WorkerContainer implements IWorkerProcessHandler
      */
     private $communicator;
 
-    public function __construct(Process $process, IWorkerCommunicator $communicator)
+    /**
+     * @var LoopInterface
+     */
+    private $loop;
+
+    private $hasJob = false;
+
+    public function __construct(Process $process, IWorkerCommunicator $communicator, LoopInterface $loop)
     {
         $this->process = $process;
         $this->communicator = $communicator;
+        $this->loop = $loop;
     }
 
     /**
      * Run a new process(if not already running)
-     * @param LoopInterface $loop
+     * @param JobDataset $jobDataset
      */
-    public function start(LoopInterface $loop)
+    public function giveJob(JobDataset $jobDataset)
     {
         if (!$this->process->isRunning()) {
-            $this->startProcess($loop);
+            $this->startProcess($this->loop);
         }
+
+        $this->hasJob = true;
     }
 
     /**
@@ -65,5 +76,10 @@ class WorkerContainer implements IWorkerProcessHandler
 
     public function onData($chunk)
     {
+    }
+
+    public function hasJob() : bool
+    {
+        return $this->hasJob;
     }
 }

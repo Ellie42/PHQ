@@ -246,3 +246,6 @@ echo $data->getPropertyA();
 var_dump($data->toArray());
 ```
 
+## TODO
+
+Refactor \PHQ. It has far too much responsibility and should instead push everything queue related onto delegates.
