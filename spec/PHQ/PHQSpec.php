@@ -8,6 +8,7 @@ use PHQ\Config\PHQConfig;
 use PHQ\Config\StorageHandlerConfig;
 use PHQ\Config\WorkerConfig;
 use PHQ\Data\JobDataset;
+use PHQ\EventBus\IJobEventBus;
 use PHQ\EventBus\PeriodicEventBus;
 use PHQ\Exceptions\ConfigurationException;
 use PHQ\Exceptions\PHQException;
@@ -168,7 +169,7 @@ class PHQSpec extends ObjectBehavior
 
     function it_should_be_able_to_start_the_worker_processes(LoopInterface $loop)
     {
-        $this->beConstructedWith($this->storage, null, $this->workerManager,null, $loop);
+        $this->beConstructedWith($this->storage, null, $this->workerManager, null, $loop);
         $this->workerManager->startWorking($loop)->shouldBeCalled();
         $this->start();
     }
@@ -185,9 +186,23 @@ class PHQSpec extends ObjectBehavior
         $this->onJobAdded();
     }
 
-    function it_should_notify_worker_manager_when_a_full_job_list_update_is_requested(){
+    function it_should_notify_worker_manager_when_a_full_job_list_update_is_requested()
+    {
         $this->workerManager->assignNewJobs()->shouldBeCalled();
         $this->updateJobs();
+    }
+
+    function it_should_fail_to_set_the_event_bus_if_it_isnt_valid(PHQConfig $config, EventBusConfigMock $eventBusConfig, WorkerManager $workerManager)
+    {
+        $this->beConstructedWith($this->storage, $config, $workerManager);
+        $config->getEventBusConfig()->shouldBeCalled()->willReturn($eventBusConfig);
+        $eventBusConfig->getClass()->shouldBeCalled()->willReturn("abc");
+        $this->shouldThrow(ConfigurationException::class)->duringInstantiation();
+    }
+
+    function it_should_use_the_existing_event_bus_if_provided(PHQConfig $config, IJobEventBus $eventBus, WorkerManager $workerManager){
+        $this->beConstructedWith($this->storage, $config, $workerManager,$eventBus);
+        $this->getEventBus()->shouldBe($eventBus);
     }
 }
 
@@ -204,6 +219,6 @@ class EventBusConfigMock extends EventBusConfig
 
     public function getOptions()
     {
-        
+
     }
 }

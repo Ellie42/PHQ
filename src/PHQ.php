@@ -242,6 +242,11 @@ class PHQ implements IJobEventListener
         }
     }
 
+    public function getEventBus()
+    {
+        return $this->jobEventBus;
+    }
+
     /**
      * Force update of jobs
      * @return mixed
