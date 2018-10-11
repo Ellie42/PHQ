@@ -16,7 +16,7 @@ class WorkerConfig extends Dataset
 {
     public $count = 1;
 
-    public $script = __DIR__ . "/../Workers/scripts/workerScript.php";
+    public $script = __DIR__ . "/../../scripts/workerScript.php";
 
     public $command = null;
 

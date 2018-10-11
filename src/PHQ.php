@@ -4,7 +4,6 @@ namespace PHQ;
 
 use PHQ\Config\PHQConfig;
 use PHQ\Data\JobDataset;
-use PHQ\EventBus\PeriodicEventBus;
 use PHQ\EventBus\IJobEventBus;
 use PHQ\Exceptions\ConfigurationException;
 use PHQ\Exceptions\PHQException;

@@ -13,7 +13,6 @@ use PHQ\Config\WorkerConfig;
 use PHQ\Data\JobDataset;
 use PHQ\PHQ;
 use React\ChildProcess\Process;
-use React\EventLoop\Factory;
 use React\EventLoop\LoopInterface;
 
 class QueueManager
@@ -39,11 +38,6 @@ class QueueManager
     private $workerContainerFactory;
 
     /**
-     * @var IWorkerCommunicator
-     */
-    private $communicator;
-
-    /**
      * @var \SplQueue
      */
     private $queue;
@@ -57,12 +51,10 @@ class QueueManager
      * WorkerManager constructor.
      * @param WorkerConfig $config
      * @param PHQ $phq
-     * @param IWorkerCommunicator|null $communicator
      */
     public function __construct(
         WorkerConfig $config,
-        PHQ $phq,
-        IWorkerCommunicator $communicator = null
+        PHQ $phq
     )
     {
         $this->config = $config;
@@ -70,17 +62,6 @@ class QueueManager
 
         $this->queue = new \SplQueue();
         $this->workers = new WorkerContainerArray();
-
-        if ($communicator === null) {
-            $this->communicator = new WorkerCommunicationAdapter();
-        } else {
-            $this->communicator = $communicator;
-        }
-    }
-
-    public function getCommunicator(): IWorkerCommunicator
-    {
-        return $this->communicator;
     }
 
     /**
@@ -130,7 +111,7 @@ class QueueManager
     private function createWorkerContainerInstance(LoopInterface $loop): WorkerContainer
     {
         if ($this->workerContainerFactory === null) {
-            return new WorkerContainer(new Process($this->config->getScriptCommand()), $this->communicator, $loop);
+            return new WorkerContainer(new Process($this->config->getScriptCommand()), $loop);
         }
 
         return call_user_func($this->workerContainerFactory, new Process($this->config->getScriptCommand()), $loop);

@@ -19,7 +19,6 @@ use PHQ\Exceptions\StorageException;
 use PHQ\Exceptions\StorageRetrievalException;
 use PHQ\Exceptions\StorageSetupException;
 use PHQ\Jobs\IJob;
-use PHQ\Jobs\Job;
 use PHQ\Storage\IQueueStorageConfigurable;
 use PHQ\Storage\IQueueStorageHandler;
 use PHQ\Storage\IQueueStorageNeedsSetup;

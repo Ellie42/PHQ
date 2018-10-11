@@ -8,7 +8,6 @@ use PHQ\Data\JobDatasetArray;
 use PHQ\Exceptions\PHQException;
 use PHQ\PHQ;
 use PHQ\Storage\IQueueStorageHandler;
-use PHQ\Workers\IWorkerCommunicator;
 use PHQ\Workers\WorkerContainer;
 use PHQ\Workers\WorkerContainerArray;
 use PHQ\Workers\QueueManager;
@@ -62,13 +61,6 @@ class QueueManagerSpec extends ObjectBehavior
         $this->shouldNotThrow(PHQException::class)->during('startWorking');
 
         $this->getWorkerContainers()->shouldBeAnInstanceOf(WorkerContainerArray::class);
-    }
-
-    function it_should_use_a_provided_communicator(IWorkerCommunicator $communicator)
-    {
-        $this->beConstructedWith($this->config,$this->phq,$communicator);
-
-        $this->getCommunicator()->shouldBe($communicator);
     }
 
     function it_should_be_able_to_create_workers_without_a_factory(){
