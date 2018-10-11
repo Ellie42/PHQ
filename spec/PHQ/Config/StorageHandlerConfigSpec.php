@@ -5,6 +5,7 @@ namespace spec\PHQ\Config;
 use PHQ\Config\StorageHandlerConfig;
 use PhpSpec\ObjectBehavior;
 use PHQ\Data\JobDataset;
+use PHQ\Data\JobDatasetArray;
 use PHQ\Exceptions\ConfigurationException;
 use PHQ\Jobs\IJob;
 use PHQ\Storage\IQueueStorageConfigurable;
@@ -59,17 +60,17 @@ class StorageHandlerConfigurableTest implements IQueueStorageHandler, IQueueStor
         //Stub
     }
 
-    public function getNext(): ?JobDataset
-    {
-        //Stub
-    }
-
     public function init(array $options): void
     {
         //Stub
     }
 
     public function update(JobDataset $jobDataset): bool
+    {
+        //Stub
+    }
+
+    public function getAvailable($afterId = null): JobDatasetArray
     {
         //Stub
     }
@@ -87,12 +88,12 @@ class StorageHandlerTest implements IQueueStorageHandler
         //Stub
     }
 
-    public function getNext(): ?JobDataset
+    public function update(JobDataset $jobDataset): bool
     {
         //Stub
     }
 
-    public function update(JobDataset $jobDataset): bool
+    public function getAvailable($afterId = null): JobDatasetArray
     {
         //Stub
     }

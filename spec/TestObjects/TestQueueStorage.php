@@ -11,6 +11,7 @@ namespace spec\TestObjects;
 
 use PHQ\Config\PHQConfig;
 use PHQ\Data\JobDataset;
+use PHQ\Data\JobDatasetArray;
 use PHQ\Jobs\IJob;
 use PHQ\Storage\IQueueStorageHandler;
 use PHQ\Storage\IQueueStorageNeedsSetup;
@@ -62,5 +63,15 @@ class TestQueueStorage implements IQueueStorageHandler, IQueueStorageNeedsSetup
     public function update(JobDataset $jobDataset): bool
     {
         // TODO: Implement update() method.
+    }
+
+    /**
+     * Return all inactive jobs
+     * @param null $afterId
+     * @return JobDataset[]
+     */
+    public function getAvailable($afterId = null): JobDatasetArray
+    {
+        // TODO: Implement getAvailable() method.
     }
 }

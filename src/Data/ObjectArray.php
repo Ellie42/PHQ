@@ -25,6 +25,13 @@ class ObjectArray extends ArrayIterator
      */
     protected $type = null;
 
+    public function __construct($baseArray = [])
+    {
+        foreach($baseArray as $entry){
+            $this->append($entry);
+        }
+    }
+
     /**
      * Offset to set
      * @link https://php.net/manual/en/arrayaccess.offsetset.php

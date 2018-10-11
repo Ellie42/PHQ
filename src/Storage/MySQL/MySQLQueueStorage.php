@@ -12,6 +12,7 @@ namespace PHQ\Storage\MySQL;
 use Phinx\Console\PhinxApplication;
 use PHPUnit\Runner\Exception;
 use PHQ\Data\JobDataset;
+use PHQ\Data\JobDatasetArray;
 use PHQ\Exceptions\AssertionException;
 use PHQ\Exceptions\ConfigurationException;
 use PHQ\Exceptions\StorageException;
@@ -113,36 +114,6 @@ class MySQLQueueStorage implements IQueueStorageHandler, IQueueStorageConfigurab
         return $result;
     }
 
-    /**
-     * Get next job in queue
-     * @return JobDataset | null
-     * @throws \Exception
-     */
-    public function getNext(): ?JobDataset
-    {
-        $sql = "
-            SELECT `id`,`class`,`payload`,`status`, `retries`
-            FROM {$this->table}
-            WHERE status = ?
-            ORDER BY id ASC
-        ";
-
-        $statement = $this->pdo->prepare($sql);
-
-        $result = $statement->execute([Job::STATUS_IDLE]);
-
-        if (!$result) {
-            throw new \Exception($this->pdo->errorInfo()[2]);
-        }
-
-        $data = $statement->fetch(\PDO::FETCH_ASSOC);
-
-        if ($data === null) {
-            return null;
-        }
-
-        return $this->createDatasetFromRow($data);
-    }
 
     /**
      * Initialise the storage handler with the config
@@ -265,5 +236,44 @@ class MySQLQueueStorage implements IQueueStorageHandler, IQueueStorageConfigurab
         }
 
         return $result;
+    }
+
+    /**
+     * Return all inactive jobs
+     * @param null $afterId
+     * @return JobDatasetArray
+     * @throws StorageException
+     */
+    public function getAvailable($afterId = null): JobDatasetArray
+    {
+        $idRestraint = "";
+        $params = [
+            \PHQ\Jobs\Job::STATUS_IDLE
+        ];
+
+        if($afterId !== null){
+            $params[] = (int)$afterId;
+            $idRestraint = "AND id > ?";
+        }
+
+        $sql = "
+            SELECT `id`,`class`,`payload`, `status`, `retries`
+            FROM {$this->table} WHERE status = ? $idRestraint 
+            ORDER BY id 
+        ";
+
+        $statement = $this->pdo->prepare($sql);
+
+        $result = $statement->execute($params);
+
+        if(!$result){
+            throw new StorageException("Failed to retrieve available jobs " . $this->pdo->errorInfo()[2]);
+        }
+
+        $rawJobs = $statement->fetchAll(\PDO::FETCH_ASSOC);
+
+        return new JobDatasetArray(array_map(function($rawJob){
+            return new JobDataset($rawJob);
+        },$rawJobs));
     }
 }

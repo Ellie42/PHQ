@@ -4,6 +4,7 @@ namespace PHQ\Storage;
 
 
 use PHQ\Data\JobDataset;
+use PHQ\Data\JobDatasetArray;
 use PHQ\Jobs\IJob;
 
 /**
@@ -35,8 +36,9 @@ interface IQueueStorageHandler
     public function enqueue(IJob $job): bool;
 
     /**
-     * Get next job in queue
-     * @return JobDataset
+     * Return all inactive jobs
+     * @param null $afterId
+     * @return JobDatasetArray | JobDataset[]
      */
-    public function getNext(): ?JobDataset;
+    public function getAvailable($afterId = null): JobDatasetArray;
 }

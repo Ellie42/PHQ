@@ -5,6 +5,7 @@ namespace spec\PHQ\Storage\MySQL;
 use PDOStatement;
 use PhpSpec\ObjectBehavior;
 use PHQ\Data\JobDataset;
+use PHQ\Data\JobDatasetArray;
 use PHQ\Exceptions\ConfigurationException;
 use PHQ\Exceptions\StorageException;
 use PHQ\Exceptions\StorageSetupException;
@@ -87,53 +88,6 @@ class MySQLQueueStorageSpec extends ObjectBehavior
         $this->enqueue($job);
     }
 
-    function it_should_be_able_to_return_the_next_available_job(PDOStatement $statement)
-    {
-        $this->pdo->prepare(Argument::containingString(
-            "SELECT `id`,`class`,`payload`,`status`, `retries`\n            FROM phq_jobs\n            WHERE status = ?"
-        ))->shouldBeCalled()->willReturn($statement);
-
-        $statement->execute(Argument::containing(Job::STATUS_IDLE))->shouldBeCalled()->willReturn(true);
-
-        $payload = [
-            "test" => "abc"
-        ];
-
-        $statement->fetch(\PDO::FETCH_ASSOC)->shouldBeCalled()->willReturn([
-            "id" => 4,
-            "class" => "TestClass",
-            "payload" => json_encode($payload),
-            "status" => 0,
-            "retries" => 0
-        ]);
-
-        $dataset = $this->getNext()->shouldBeAnInstanceOf(JobDataset::class);
-
-        expect($dataset->getPayload())->shouldBe($payload);
-    }
-
-    function it_should_return_null_if_there_are_no_more_jobs(PDOStatement $statement)
-    {
-        $this->pdo->prepare(Argument::containingString(
-            "SELECT `id`,`class`,`payload`,`status`, `retries`\n            FROM phq_jobs\n            WHERE status = ?"
-        ))->shouldBeCalled()->willReturn($statement);
-
-        $statement->execute(Argument::containing(Job::STATUS_IDLE))->shouldBeCalled()->willReturn(true);
-
-        $statement->fetch(\PDO::FETCH_ASSOC)->shouldBeCalled()->willReturn(null);
-
-        $this->getNext()->shouldReturn(null);
-    }
-
-
-    function it_should_throw_an_error_if_it_cannot_get_the_next_entry_due_to_db_error(PDOStatement $statement)
-    {
-        $this->pdo->prepare(Argument::any())->shouldBeCalled()->willReturn($statement);
-
-        $statement->execute(Argument::containing(Job::STATUS_IDLE))->shouldBeCalled()->willReturn(false);
-
-        $this->shouldThrow(\Exception::class)->during('getNext');
-    }
 
     function it_should_create_the_required_tables_in_the_db_on_first_setup(PDOStatement $statement)
     {
@@ -233,5 +187,60 @@ class MySQLQueueStorageSpec extends ObjectBehavior
         $statement->execute([null, "[]", Job::STATUS_SUCCESS, null, 1])->shouldBeCalled()->willReturn(true);
 
         $this->update($job)->shouldReturn(true);
+    }
+
+    function it_should_be_able_to_get_all_available_jobs(\PDOStatement $statement){
+        $this->pdo->prepare("
+            SELECT `id`,`class`,`payload`, `status`, `retries`
+            FROM phq_jobs WHERE status = ?  
+            ORDER BY id 
+        ")->shouldBeCalled()->willReturn($statement);
+
+        $statement->execute([Job::STATUS_IDLE])->shouldBecalled()->willReturn(true);
+
+        $statement->fetchAll(\PDO::FETCH_ASSOC)->shouldBeCalled()->willReturn([]);
+
+        $this->getAvailable()->shouldBeAnInstanceOf(JobDatasetArray::class);
+    }
+
+    function it_should_return_a_populated_job_dataset_array(\PDOStatement $statement){
+        $this->pdo->prepare(Argument::any())->shouldBeCalled()->willReturn($statement);
+
+        $jobData = [
+            "payload" => [],
+            "status" => Job::STATUS_SUCCESS,
+            "id" => 1
+        ];
+
+        $statement->execute([Job::STATUS_IDLE])->shouldBecalled()->willReturn(true);
+
+        $statement->fetchAll(\PDO::FETCH_ASSOC)->shouldBeCalled()->willReturn([$jobData]);
+
+        $array = $this->getAvailable()->shouldBeAnInstanceOf(JobDatasetArray::class);
+
+        expect($array[0])->shouldBeAnInstanceOf(JobDataset::class);
+    }
+
+    function it_should_be_able_to_get_all_available_jobs_after_a_certain_job_id(\PDOStatement $statement){
+        $this->pdo->prepare("
+            SELECT `id`,`class`,`payload`, `status`, `retries`
+            FROM phq_jobs WHERE status = ? AND id > ? 
+            ORDER BY id 
+        ")->shouldBeCalled()->willReturn($statement);
+
+        $statement->execute([Job::STATUS_IDLE, 100])->shouldBeCalled()->willReturn(true);
+        $statement->fetchAll(\PDO::FETCH_ASSOC)->shouldBeCalled()->willReturn([]);
+
+        $this->getAvailable(100)->shouldBeAnInstanceOf(JobDatasetArray::class);
+    }
+
+    function it_should_throw_an_error_if_query_fails(\PDOStatement $statement){
+        $this->pdo->prepare(Argument::any())->shouldBeCalled()->willReturn($statement);
+
+        $this->pdo->errorInfo()->shouldBeCalled()->willReturn([null, null, "woops"]);
+
+        $statement->execute(Argument::any())->shouldBeCalled()->willReturn(false);
+
+        $this->shouldThrow(StorageException::class)->during('getAvailable');
     }
 }
