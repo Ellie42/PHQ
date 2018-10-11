@@ -2,7 +2,6 @@ language: php
 php:
 - '7.2'
 install:
-  - pecl install pdo json
   - composer update
 script: ./vendor/bin/phpspec run -c phpspec.coverage.yml
 after_success:
