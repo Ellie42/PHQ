@@ -49,11 +49,18 @@ class JobDataset extends Dataset
      */
     public function setPayload($payload)
     {
-        if(is_string($payload)){
-            $this->payload = json_decode($payload, true);
-        }else{
-            $this->payload = $payload;
+        if (is_string($payload)) {
+
+            $parsed = json_decode($payload, true);
+
+            //If the string was not valid json then assume it is not meant to be
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $this->payload = $parsed;
+                return;
+            }
         }
+
+        $this->payload = $payload;
     }
 
     public function getSerialisedPayload()

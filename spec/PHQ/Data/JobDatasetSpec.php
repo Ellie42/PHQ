@@ -10,6 +10,9 @@ use spec\TestObjects\TestJob;
 
 class JobDatasetSpec extends ObjectBehavior
 {
+    function let(){
+        $this->beAnInstanceOf(JobDatasetTest::class);
+    }
     function it_is_initializable()
     {
         $this->shouldHaveType(JobDataset::class);
@@ -46,6 +49,13 @@ class JobDatasetSpec extends ObjectBehavior
     {
         $this->setClass(TestJob::class);
         $this->getJob()->shouldBeAnInstanceOf(TestJob::class);
+    }
+}
+
+class JobDatasetTest extends JobDataset{
+    public function getPayload()
+    {
+        return $this->payload;
     }
 }
 
