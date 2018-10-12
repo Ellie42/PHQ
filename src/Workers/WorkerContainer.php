@@ -88,7 +88,9 @@ class WorkerContainer implements IWorkerProcessHandler
 
     public function killProcess()
     {
-        $this->process->close();
+        if($this->process->isRunning()){
+            $this->process->close();
+        }
     }
 
     private function sendMessage(WorkerMessage $message)

@@ -81,6 +81,7 @@ class WorkerContainerSpec extends ObjectBehavior
     }
 
     function it_should_be_able_to_kill_the_child_process(){
+        $this->process->isRunning()->shouldBeCalled()->willReturn(true);
         $this->process->close()->shouldBeCalled();
         $this->killProcess();
     }
