@@ -6,8 +6,10 @@
  * Time: 13:50
  */
 
-namespace PHQ\Messages;
+namespace PHQ\Messages\Container;
 
+
+use PHQ\Messages\WorkerMessage;
 
 class JobStartMessage extends WorkerMessage
 {

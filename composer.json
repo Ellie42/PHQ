@@ -9,6 +9,7 @@
   "autoload": {
     "psr-4": {
       "PHQ\\": "src/",
+      "PHQExamples\\": "examples/",
       "spec\\TestObjects\\": "spec/TestObjects"
     }
   },
@@ -29,6 +30,7 @@
     "react/event-loop": "^1.0",
     "react/http": "^0.8.3",
     "ext-pdo": "*",
-    "ext-json": "*"
+    "ext-json": "*",
+    "ext-pcntl": "*"
   }
 }

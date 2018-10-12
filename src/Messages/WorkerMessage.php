@@ -9,7 +9,9 @@
 namespace PHQ\Messages;
 
 
-class WorkerMessage
+use PHQ\Data\Dataset;
+
+class WorkerMessage extends Dataset
 {
     /**
      * Class name of message type
@@ -23,20 +25,12 @@ class WorkerMessage
      */
     public $data;
 
-    public function __construct(array $data)
-    {
-        $this->data = $data;
-    }
-
     /**
      * Serialise the message
      * @return false|string
      */
     public function serialise()
     {
-        return json_encode([
-            "type" => $this->type,
-            "data" => $this->data
-        ]);
+        return json_encode($this->toArray());
     }
 }

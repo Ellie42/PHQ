@@ -6,6 +6,8 @@
  * Time: 14:55
  */
 
+namespace PHQExamples\Jobs;
+
 class MakeSomeFilesPayload extends \PHQ\Data\Payload
 {
     public $dir;

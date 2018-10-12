@@ -9,6 +9,9 @@
 namespace PHQ\Data;
 
 
+use PHQ\Exceptions\PHQException;
+use PHQ\Jobs\IJob;
+
 class JobDataset extends Dataset
 {
     /**
@@ -40,9 +43,46 @@ class JobDataset extends Dataset
      */
     public $retries;
 
+    /**
+     * Ensure that the payload being set is an array
+     * @param $payload string | array
+     */
+    public function setPayload($payload)
+    {
+        if(is_string($payload)){
+            $this->payload = json_decode($payload, true);
+        }else{
+            $this->payload = $payload;
+        }
+    }
+
     public function getSerialisedPayload()
     {
         return json_encode($this->payload);
     }
 
+    /**
+     * Returns an instance of IJob based on the class name in the JobDataset and sets the payload
+     * @return IJob
+     * @throws PHQException
+     */
+    public function getJob(): IJob
+    {
+        $className = $this->getClass();
+
+        if (!class_exists($className)) {
+            throw new PHQException("Class {$className} does not exist!");
+        }
+
+        if (!(is_subclass_of($className, IJob::class))) {
+            throw new PHQException("$className is not an instance of " . IJob::class);
+        }
+
+        /**
+         * @var IJob
+         */
+        $obj = new $className($this);
+
+        return $obj;
+    }
 }

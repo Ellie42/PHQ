@@ -54,18 +54,6 @@ class PHQSpec extends ObjectBehavior
         $this->enqueue($job);
     }
 
-    function it_should_be_able_to_get_the_next_job()
-    {
-        $jobData = new JobDataset([
-            "id" => 5,
-            "class" => TestJob::class,
-            "payload" => "{}"
-        ]);
-        $this->storage->getNext()->shouldBeCalled()->willReturn($jobData);
-
-        $this->getNext()->shouldBeAnInstanceOf(IJob::class);
-    }
-
     function it_should_use_the_config_to_initialise_all_configured_services(
         PHQConfig $config,
         StorageHandlerConfig $storageConfig,
@@ -118,31 +106,6 @@ class PHQSpec extends ObjectBehavior
         $this->shouldThrow(ConfigurationException::class)->duringInstantiation();
     }
 
-    function it_should_throw_error_if_job_class_does_not_exist_when_creating()
-    {
-        $jobDataset = new JobDataset([
-            "class" => "notarealjob"
-        ]);
-
-        $this->shouldThrow(PHQException::class)->during('createJobFromJobEntry', [$jobDataset]);
-    }
-
-    function it_should_throw_error_if_job_class_is_not_a_valid_job()
-    {
-        $jobDataset = new JobDataset([
-            "class" => JobNotGoodEnough::class
-        ]);
-
-        $this->shouldThrow(PHQException::class)->during('createJobFromJobEntry', [$jobDataset]);
-    }
-
-    function it_should_be_able_to_create_a_job_object_from_job_data()
-    {
-        $this->createJobFromJobEntry(new JobDataset([
-            "class" => TestJob::class
-        ]))->shouldBeAnInstanceOf(TestJob::class);
-    }
-
     function it_should_be_able_to_update_a_job_status()
     {
         $jobData = new JobDataset([
@@ -156,29 +119,12 @@ class PHQSpec extends ObjectBehavior
         $this->update($job)->shouldReturn(true);
     }
 
-    function it_should_run_the_next_job_and_update_status_when_complete(Job $job)
-    {
-        $dataset = new JobDataset([
-            "class" => TestJob::class
-        ]);
-
-        $this->storage->getNext()->shouldBeCalled()->willReturn($dataset);
-        $this->storage->update($dataset)->shouldBeCalled();
-        $this->process();
-    }
-
     function it_should_be_able_to_start_the_worker_processes(LoopInterface $loop)
     {
         $this->beConstructedWith($this->storage, null, $this->workerManager, null, $loop);
         $this->workerManager->startWorking($loop)->shouldBeCalled();
         $this->start();
     }
-
-//    function it_should_notify_worker_manager_of_new_jobs_added_with_id()
-//    {
-//        $this->workerManager->assignJobById(10)->shouldBeCalled();
-//        $this->onJobAdded(10);
-//    }
 
     function it_should_notify_worker_manager_of_new_jobs_without_id()
     {

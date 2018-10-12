@@ -111,19 +111,6 @@ $phq->start()
 
 ```
 
- 
-
-#### Getting jobs from the queue
-
-Retrieve the next job by calling `getNext()` on `PHQ\PHQ`
-
-```php
-    /**
-    * $job is an instance of \PHQ\Jobs\IJob
-    */
-    $job = $phq->getNext();
-```
-
 ## Configuration
 
 PHQ will automatically load configuration data stored in `${cwd}/phqconf.php`.

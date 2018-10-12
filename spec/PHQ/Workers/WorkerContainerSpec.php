@@ -79,4 +79,9 @@ class WorkerContainerSpec extends ObjectBehavior
     function it_should_indicate_that_is_has_no_job_when_it_doesnt(){
         $this->hasJob()->shouldReturn(false);
     }
+
+    function it_should_be_able_to_kill_the_child_process(){
+        $this->process->close()->shouldBeCalled();
+        $this->killProcess();
+    }
 }
