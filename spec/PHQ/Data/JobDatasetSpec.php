@@ -10,9 +10,11 @@ use spec\TestObjects\TestJob;
 
 class JobDatasetSpec extends ObjectBehavior
 {
-    function let(){
+    function let()
+    {
         $this->beAnInstanceOf(JobDatasetTest::class);
     }
+
     function it_is_initializable()
     {
         $this->shouldHaveType(JobDataset::class);
@@ -50,9 +52,19 @@ class JobDatasetSpec extends ObjectBehavior
         $this->setClass(TestJob::class);
         $this->getJob()->shouldBeAnInstanceOf(TestJob::class);
     }
+
+    function it_should_parse_a_json_payload_when_set()
+    {
+        $rawPayload = ["a" => "b"];
+        $payload = json_encode($rawPayload);
+        $this->setPayload($payload);
+
+        $this->getPayload()->shouldReturn($rawPayload);
+    }
 }
 
-class JobDatasetTest extends JobDataset{
+class JobDatasetTest extends JobDataset
+{
     public function getPayload()
     {
         return $this->payload;

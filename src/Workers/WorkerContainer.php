@@ -88,7 +88,7 @@ class WorkerContainer implements IWorkerProcessHandler
 
     public function killProcess()
     {
-        if($this->process->isRunning()){
+        if ($this->process->isRunning()) {
             $this->process->close();
         }
     }
@@ -116,14 +116,14 @@ class WorkerContainer implements IWorkerProcessHandler
         $data = json_decode($chunk, true);
 
         //Not a message, probably just regular output that should be passed through
-        if($data === null){
+        if ($data === null) {
             echo $chunk;
             return;
         }
 
         $message = $this->messageParser->parse($chunk);
 
-        if($message instanceof JobFinishedMessage){
+        if ($message instanceof JobFinishedMessage) {
             $this->onJobFinished($message);
         }
     }
