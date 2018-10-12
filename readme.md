@@ -237,4 +237,6 @@ var_dump($data->toArray());
 
 Refactor \PHQ. It has far too much responsibility and should instead push everything queue related onto delegates.
 
-Modify WorkerContainer to use a generic ProcessAdapter rather than the Process class directly. This is to allow other methods for spawning worker processes, such as over the network. 
+Modify WorkerContainer to use a generic ProcessAdapter rather than the Process class directly. This is to allow other methods for spawning worker processes, such as over the network.
+
+Send job ID across all worker messages 

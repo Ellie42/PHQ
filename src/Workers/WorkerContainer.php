@@ -10,6 +10,7 @@ namespace PHQ\Workers;
 
 
 use PHQ\Data\JobDataset;
+use PHQ\Exceptions\PHQException;
 use PHQ\Messages\Container\JobStartMessage;
 use PHQ\Messages\IMessageParser;
 use PHQ\Messages\MessageParser;
@@ -17,6 +18,8 @@ use PHQ\Messages\Worker\JobFinishedMessage;
 use PHQ\Messages\WorkerMessage;
 use React\ChildProcess\Process;
 use React\EventLoop\LoopInterface;
+use React\Stream\WritableResourceStream;
+use React\Stream\WritableStreamInterface;
 
 class WorkerContainer implements IWorkerProcessHandler
 {
@@ -35,6 +38,11 @@ class WorkerContainer implements IWorkerProcessHandler
      */
     private $messageParser;
 
+    /**
+     * @var WritableStreamInterface
+     */
+    private $stderr;
+
     private $hasJob = false;
 
     public function __construct(Process $process, LoopInterface $loop)
@@ -42,6 +50,12 @@ class WorkerContainer implements IWorkerProcessHandler
         $this->process = $process;
         $this->loop = $loop;
         $this->messageParser = new MessageParser();
+        $this->stderr = new WritableResourceStream(STDERR, $loop);
+    }
+
+    public function setStderr(WritableResourceStream $stderr)
+    {
+        $this->stderr = $stderr;
     }
 
     /**
@@ -54,6 +68,14 @@ class WorkerContainer implements IWorkerProcessHandler
     }
 
     /**
+     * @return IMessageParser|MessageParser
+     */
+    public function getMessageParser()
+    {
+        return $this->messageParser;
+    }
+
+    /**
      * Run a new process(if not already running)
      * @param JobDataset $jobDataset
      */
@@ -63,6 +85,7 @@ class WorkerContainer implements IWorkerProcessHandler
             $this->startProcess($this->loop);
         }
 
+        //Send the job data to the worker process
         $this->sendMessage(new JobStartMessage([
             "data" => $jobDataset->toArray()
         ]));
@@ -83,9 +106,13 @@ class WorkerContainer implements IWorkerProcessHandler
         $this->process->on('exit', \Closure::fromCallable([$this, 'onExit']));
         $this->process->stdout->on('error', \Closure::fromCallable([$this, 'onError']));
 
+        //On script end or terminate kill the child process if it is running
         register_shutdown_function([$this, 'killProcess']);
     }
 
+    /**
+     * Terminate child process
+     */
     public function killProcess()
     {
         if ($this->process->isRunning()) {
@@ -109,7 +136,6 @@ class WorkerContainer implements IWorkerProcessHandler
     /**
      * Parse any messages received from the worker process
      * @param $chunk
-     * @throws \PHQ\Exceptions\PHQException
      */
     public function onData($chunk)
     {
@@ -121,11 +147,18 @@ class WorkerContainer implements IWorkerProcessHandler
             return;
         }
 
-        $message = $this->messageParser->parse($chunk);
+        try {
+            $message = $this->messageParser->parse($chunk);
+        } catch (PHQException $e) {
+            $this->stderr->write("Failed to parse message: {$e->getMessage()}\n");
+            return;
+        }
 
         if ($message instanceof JobFinishedMessage) {
             $this->onJobFinished($message);
         }
+
+        $this->stderr->write("Unhandled message {$message->type}\n");
     }
 
     public function hasJob(): bool
