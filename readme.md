@@ -240,3 +240,5 @@ Refactor \PHQ. It has far too much responsibility and should instead push everyt
 Modify WorkerContainer to use a generic ProcessAdapter rather than the Process class directly. This is to allow other methods for spawning worker processes, such as over the network.
 
 Send job ID across all worker messages 
+
+Implement logging abstraction

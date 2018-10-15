@@ -92,18 +92,21 @@ class QueueManager
 
         $this->assignNewJobs();
 
-        $loop->addPeriodicTimer(0, function () {
-        });
+        $loop->addPeriodicTimer(0, function () {});
 
         $loop->run();
     }
 
+    /**
+     * @return WorkerContainerArray
+     */
     public function getWorkerContainers(): WorkerContainerArray
     {
         return $this->workers;
     }
 
     /**
+     * Creates a worker container instance either directly or using a configured factory
      * @param LoopInterface $loop
      * @return WorkerContainer
      * @throws \PHQ\Exceptions\ConfigurationException
@@ -188,6 +191,11 @@ class QueueManager
         }
     }
 
+    /**
+     * Create worker instances
+     * @param LoopInterface $loop
+     * @throws \PHQ\Exceptions\ConfigurationException
+     */
     private function initialiseWorkers(LoopInterface $loop): void
     {
         $this->workers = new WorkerContainerArray();

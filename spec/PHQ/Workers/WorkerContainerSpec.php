@@ -3,18 +3,19 @@
 namespace spec\PHQ\Workers;
 
 use PHQ\Data\JobDataset;
+use PHQ\Exceptions\PHQException;
 use PHQ\Messages\IMessageParser;
 use PHQ\Messages\Worker\JobFinishedMessage;
 use PHQ\Workers\IWorkerCommunicator;
+use PHQ\Workers\IWorkerEventHandler;
 use PHQ\Workers\WorkerContainer;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 use React\ChildProcess\Process;
 use React\EventLoop\LoopInterface;
 use React\Stream\ReadableStreamInterface;
-use React\Stream\WritableResourceStream;
 use React\Stream\WritableStreamInterface;
-use spec\TestObjects\TestJob;
+
 
 class WorkerContainerSpec extends ObjectBehavior
 {
@@ -31,6 +32,7 @@ class WorkerContainerSpec extends ObjectBehavior
     function let(Process $process, LoopInterface $loop)
     {
         $this->process = $process;
+        $this->loop = $loop;
 
         $this->beConstructedWith($process, $loop);
     }
@@ -109,8 +111,23 @@ class WorkerContainerSpec extends ObjectBehavior
         expect($echo)->shouldBe("abc");
     }
 
-    function it_should_handle_all_exceptions_by_writing_to_stderr(){
+    function it_should_handle_all_exceptions_by_writing_to_stderr(
+        IMessageParser $messageParser, WritableStreamInterface $stdin,
+        WritableStreamInterface $stderr
+    ){
+        $this->setMessageParser($messageParser);
+        $this->setStderr($stderr);
 
+        $messageParser->parse(Argument::any())->willThrow(PHQException::class);
+
+        $this->mockGiveJob($stdin);
+        $stderr->write(Argument::any())->shouldBeCalled();
+        $this->onData(json_encode([]));
+    }
+
+    function it_should_be_able_to_use_a_specific_event_handler_for_job_events(IWorkerEventHandler $workerEventHandler){
+        $this->setWorkerEventHandler($workerEventHandler);
+        $this->getWorkerEventHandler()->shouldReturn($workerEventHandler);
     }
 
     /**

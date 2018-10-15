@@ -43,17 +43,41 @@ class WorkerContainer implements IWorkerProcessHandler
      */
     private $stderr;
 
+    /**
+     * @var IWorkerEventHandler
+     */
+    private $workerEventHandler;
+
     private $hasJob = false;
 
+    /**
+     * WorkerContainer constructor.
+     * @param Process $process
+     * @param LoopInterface $loop
+     */
     public function __construct(Process $process, LoopInterface $loop)
     {
         $this->process = $process;
         $this->loop = $loop;
         $this->messageParser = new MessageParser();
         $this->stderr = new WritableResourceStream(STDERR, $loop);
+        $this->workerEventHandler = $this;
     }
 
-    public function setStderr(WritableResourceStream $stderr)
+    public function setWorkerEventHandler(IWorkerEventHandler $workerEventHandler): void
+    {
+        $this->workerEventHandler = $workerEventHandler;
+    }
+
+    public function getWorkerEventHandler(): IWorkerEventHandler
+    {
+        return $this->workerEventHandler;
+    }
+
+    /**
+     * @param WritableStreamInterface $stderr
+     */
+    public function setStderr(WritableStreamInterface $stderr)
     {
         $this->stderr = $stderr;
     }
@@ -155,7 +179,7 @@ class WorkerContainer implements IWorkerProcessHandler
         }
 
         if ($message instanceof JobFinishedMessage) {
-            $this->onJobFinished($message);
+            $this->workerEventHandler->onJobFinished($message);
         }
 
         $this->stderr->write("Unhandled message {$message->type}\n");
