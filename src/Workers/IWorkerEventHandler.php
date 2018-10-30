@@ -18,5 +18,5 @@ use PHQ\Messages\Worker\JobFinishedMessage;
  */
 interface IWorkerEventHandler
 {
-    function onJobCompleted(JobFinishedMessage $jobFinishedMessage): void;
+    function onJobCompleted(WorkerContainer $worker, JobFinishedMessage $jobFinishedMessage): void;
 }

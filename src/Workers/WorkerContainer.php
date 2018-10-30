@@ -11,6 +11,8 @@ namespace PHQ\Workers;
 
 use PHQ\Data\JobDataset;
 use PHQ\Exceptions\PHQException;
+use PHQ\Jobs\IJob;
+use PHQ\Jobs\Job;
 use PHQ\Messages\Container\JobStartMessage;
 use PHQ\Messages\IMessageParser;
 use PHQ\Messages\MessageParser;
@@ -51,6 +53,11 @@ class WorkerContainer implements IWorkerProcessHandler
     private $hasJob = false;
 
     /**
+     * @var JobDataset
+     */
+    private $currentJobDataset;
+
+    /**
      * WorkerContainer constructor.
      * @param Process $process
      * @param LoopInterface $loop
@@ -61,7 +68,6 @@ class WorkerContainer implements IWorkerProcessHandler
         $this->loop = $loop;
         $this->messageParser = new MessageParser();
         $this->stderr = new WritableResourceStream(STDERR, $loop);
-        $this->workerEventHandler = $this;
     }
 
     public function setWorkerEventHandler(IWorkerEventHandler $workerEventHandler): void
@@ -105,6 +111,8 @@ class WorkerContainer implements IWorkerProcessHandler
      */
     public function giveJob(JobDataset $jobDataset)
     {
+        $this->currentJobDataset = $jobDataset;
+
         if (!$this->process->isRunning()) {
             $this->startProcess($this->loop);
         }
@@ -113,8 +121,6 @@ class WorkerContainer implements IWorkerProcessHandler
         $this->sendMessage(new JobStartMessage([
             "data" => $jobDataset->toArray()
         ]));
-
-        $this->hasJob = true;
     }
 
     /**
@@ -146,7 +152,7 @@ class WorkerContainer implements IWorkerProcessHandler
 
     private function sendMessage(WorkerMessage $message)
     {
-        $this->process->stdin->write($message->serialise() . "\n");
+        $this->process->stdin->write($message->serialise() . "\n\n");
     }
 
     public function onError(\Exception $e)
@@ -179,7 +185,14 @@ class WorkerContainer implements IWorkerProcessHandler
         }
 
         if ($message instanceof JobFinishedMessage) {
-            $this->workerEventHandler->onJobFinished($message);
+            $this->currentJobDataset->status = $message->status;
+
+            if ($this->workerEventHandler) {
+                $this->workerEventHandler->onJobCompleted($this, $message);
+            }
+
+            $this->currentJobDataset = null;
+            return;
         }
 
         $this->stderr->write("Unhandled message {$message->type}\n");
@@ -187,16 +200,11 @@ class WorkerContainer implements IWorkerProcessHandler
 
     public function hasJob(): bool
     {
-        return $this->hasJob;
+        return $this->currentJobDataset !== null;
     }
 
-    /**
-     * On job finished we need to notify the queue manager and mark this worker as without a job
-     * @param JobFinishedMessage $message
-     */
-    private function onJobFinished(JobFinishedMessage $message)
+    function getCurrentJob(): JobDataset
     {
-        //TODO implement update
-        $this->hasJob = false;
+        return $this->currentJobDataset;
     }
 }

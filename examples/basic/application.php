@@ -1,6 +1,9 @@
 <?php
 
-require_once __DIR__ . "/../vendor/autoload.php";
+use PHQExamples\Jobs\MakeSomeFilesJob;
+use PHQExamples\Jobs\MakeSomeFilesPayload;
+
+require_once __DIR__ . "/../../vendor/autoload.php";
 require_once __DIR__ . "/../Jobs/MakeSomeFilesJob.php";
 require_once __DIR__ . "/../Jobs/MakeSomeFilesPayload.php";
 

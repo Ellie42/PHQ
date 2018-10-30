@@ -60,7 +60,7 @@ class Worker
     {
         $message = $this->messageParser->parse($chunk);
 
-        if($message instanceof JobStartMessage){
+        if ($message instanceof JobStartMessage) {
             $this->startJob($message);
         }
     }
@@ -80,7 +80,7 @@ class Worker
 
         $this->sendMessage(new JobFinishedMessage([
             "status" => $result
-        ]));
+        ], $jobDataset->id));
     }
 
     /**

@@ -11,11 +11,12 @@ namespace PHQ\Workers;
 
 use PHQ\Config\WorkerConfig;
 use PHQ\Data\JobDataset;
+use PHQ\Messages\Worker\JobFinishedMessage;
 use PHQ\PHQ;
 use React\ChildProcess\Process;
 use React\EventLoop\LoopInterface;
 
-class QueueManager
+class QueueManager implements IWorkerEventHandler
 {
     /**
      * @var WorkerConfig
@@ -48,6 +49,11 @@ class QueueManager
     private $lastJobId = 0;
 
     /**
+     * @var IWorkerEventHandler
+     */
+    private $workerEventHandler;
+
+    /**
      * WorkerManager constructor.
      * @param WorkerConfig $config
      * @param PHQ $phq
@@ -71,6 +77,15 @@ class QueueManager
     public function setWorkerContainerFactory(\Closure $factory)
     {
         $this->workerContainerFactory = $factory;
+    }
+
+    /**
+     * Sets the event handler for all individual worker events
+     * @param IWorkerEventHandler $workerEventHandler
+     */
+    public function setWorkerEventHandler(IWorkerEventHandler $workerEventHandler)
+    {
+        $this->workerEventHandler = $workerEventHandler;
     }
 
     /**
@@ -133,14 +148,7 @@ class QueueManager
 
         //Only attempt to assign jobs to workers without a job currently
         foreach ($this->getFreeWorkers() as $worker) {
-            $nextJob = $this->getNextJob();
-
-            //No more jobs remaining
-            if (!$nextJob) {
-                return;
-            }
-
-            $worker->giveJob($nextJob);
+            $this->giveWorkerFreeJob($worker);
         }
     }
 
@@ -183,7 +191,7 @@ class QueueManager
         }
 
         //Last job id is used as the pivot for the next job retrieval
-        $this->lastJobId = $jobs[$jobCount - 1];
+        $this->lastJobId = $jobs[$jobCount - 1]->id;
 
         //Add to local queue
         foreach ($jobs as $job) {
@@ -202,6 +210,8 @@ class QueueManager
 
         for ($i = 0; $i < $this->config->getCount(); $i++) {
             $worker = $this->createWorkerContainerInstance($loop);
+
+            $worker->setWorkerEventHandler($this);
 
             $this->workers[] = $worker;
         }
@@ -224,5 +234,33 @@ class QueueManager
         }
 
         return true;
+    }
+
+    /**
+     * When a worker completes a job, use the storage handler to save the updated job data and then
+     * trigger a new job assignment
+     * @param WorkerContainer $worker
+     * @param JobFinishedMessage $jobFinishedMessage
+     */
+    function onJobCompleted(WorkerContainer $worker, JobFinishedMessage $jobFinishedMessage): void
+    {
+        $this->phq->getStorageHandler()->update($worker->getCurrentJob());
+
+        $this->giveWorkerFreeJob($worker);
+    }
+
+    /**
+     * @param $worker
+     */
+    private function giveWorkerFreeJob(WorkerContainer $worker): void
+    {
+        $nextJob = $this->getNextJob();
+
+        //No more jobs remaining
+        if (!$nextJob) {
+            return;
+        }
+
+        $worker->giveJob($nextJob);
     }
 }

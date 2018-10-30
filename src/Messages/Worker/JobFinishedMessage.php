@@ -11,7 +11,7 @@ namespace PHQ\Messages\Worker;
 
 use PHQ\Messages\WorkerMessage;
 
-class JobFinishedMessage extends WorkerMessage
+class JobFinishedMessage extends JobMessage
 {
     public $type = self::class;
 
@@ -20,4 +20,13 @@ class JobFinishedMessage extends WorkerMessage
      * @var int
      */
     public $status = \PHQ\Jobs\Job::STATUS_SUCCESS;
+
+    public function __construct(array $props = [], $jobId = null)
+    {
+        parent::__construct($props);
+
+        if ($jobId !== null) {
+            $this->jobId = $jobId;
+        }
+    }
 }
